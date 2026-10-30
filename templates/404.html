@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>404 ไม่พบหน้านี้ - KKU SHOOTING CLUB</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='club_logo.png') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-body: #080c14;
+            --bg-card: #0f172a;
+            --border-card: #1e293b;
+            --primary-blue: #2563eb;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Kanit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 15px;
+            background-image: radial-gradient(circle at 50% 20%, rgba(37, 99, 235, 0.12) 0%, transparent 60%);
+        }
+        .error-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            padding: 45px 35px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+        }
+        .error-code {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .club-logo {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            margin-bottom: 18px;
+        }
+        .btn-home {
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 12px 28px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+        }
+        .btn-home:hover {
+            background-color: #1d4ed8;
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <img src="{{ url_for('static', filename='club_logo.png') }}" alt="KKU Shooting Club" class="club-logo">
+        <div class="error-code">404</div>
+        <h3 class="fw-bold mb-2">ไม่พบหน้าที่ท่านต้องการ</h3>
+        <p class="text-secondary mb-4" style="font-size: 0.95rem;">
+            หน้าที่ท่านกำลังพยายามเข้าถึงอาจถูกย้าย ลบ หรือพิมพ์ที่อยู่ URL ไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง
+        </p>
+        <a href="{{ url_for('login') }}" class="btn-home">
+            <i class="bi bi-house-door-fill"></i> กลับสู่หน้าหลักชมรม
+        </a>
+    </div>
+</body>
+</html>

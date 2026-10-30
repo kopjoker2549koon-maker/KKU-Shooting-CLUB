@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KKU Shoot">
+    <meta name="theme-color" content="#080c14">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <title>สมัครสมาชิก - KKU SHOOTING CLUB</title>
+    <!-- Club Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='club_logo.png') }}">
+    <!-- Bootstrap 5, Icons & Kanit Font -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">
+
+    <style>
+        :root {
+            --bg-body: #080c14;
+            --bg-card: #0f172a;
+            --bg-input: #0b1120;
+            --border-card: #1e293b;
+            --border-input: #334155;
+            --primary-blue: #2563eb;
+            --primary-blue-hover: #1d4ed8;
+            --blue-glow: rgba(37, 99, 235, 0.25);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Kanit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 15px;
+            background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 60%);
+        }
+
+        .minimal-register-container {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        /* Card Container */
+        .minimal-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(37, 99, 235, 0.08);
+            padding: 38px 36px;
+        }
+
+        /* Header */
+        .card-header-minimal {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .club-logo-img {
+            width: 68px;
+            height: 68px;
+            object-fit: contain;
+            margin-bottom: 14px;
+        }
+
+        .page-title {
+            font-size: 1.65rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-sub);
+            margin: 0;
+        }
+
+        /* Avatar Upload */
+        .avatar-upload-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .avatar-circle-frame {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            border: 2px dashed #475569;
+            background-color: var(--bg-input);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .avatar-circle-frame:hover {
+            border-color: var(--primary-blue);
+            background-color: #111c35;
+            transform: scale(1.03);
+        }
+
+        .avatar-img-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .avatar-icon-placeholder {
+            font-size: 2rem;
+            color: #64748b;
+        }
+
+        .btn-avatar-chip {
+            background: #1e293b;
+            color: #38bdf8;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            padding: 4px 14px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-avatar-chip:hover {
+            background: var(--primary-blue);
+            color: #ffffff;
+            border-color: var(--primary-blue);
+        }
+
+        /* Section Title */
+        .minimal-section-heading {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #38bdf8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .minimal-section-heading::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #1e293b;
+        }
+
+        /* Form Inputs */
+        .form-label-minimal {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .minimal-control {
+            background-color: var(--bg-input);
+            border: 1.5px solid var(--border-input);
+            border-radius: 9px;
+            color: #ffffff;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.95rem;
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+        }
+
+        .minimal-control:focus {
+            background-color: #0d1527;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px var(--blue-glow);
+            color: #ffffff;
+            outline: none;
+        }
+
+        .minimal-control::placeholder {
+            color: #475569;
+            font-size: 0.88rem;
+        }
+
+        select.minimal-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338bdf8'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            cursor: pointer;
+        }
+
+        select.minimal-control option {
+            background-color: #0f172a;
+            color: #ffffff;
+        }
+
+        .btn-eye-toggle {
+            background: transparent;
+            border: 1.5px solid var(--border-input);
+            border-left: none;
+            color: #64748b;
+            border-top-right-radius: 9px !important;
+            border-bottom-right-radius: 9px !important;
+        }
+
+        .btn-eye-toggle:hover {
+            color: #38bdf8;
+            background: transparent;
+            border-color: var(--border-input);
+        }
+
+        /* Submit Button */
+        .btn-submit-minimal {
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 13px;
+            width: 100%;
+            margin-top: 14px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-submit-minimal:hover {
+            background-color: var(--primary-blue-hover);
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+        }
+
+        /* Bottom Footer */
+        .card-footer-minimal {
+            text-align: center;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #1e293b;
+            font-size: 0.92rem;
+            color: var(--text-sub);
+        }
+
+        .link-login-clean {
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 500;
+            margin-left: 6px;
+        }
+
+        .link-login-clean:hover {
+            color: #7dd3fc;
+            text-decoration: underline;
+        }
+
+        /* Error Alert */
+        .minimal-alert-danger {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .minimal-control.input-error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3) !important;
+        }
+
+        .minimal-control.input-valid {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+        }
+
+        .field-inline-msg {
+            font-size: 0.76rem;
+            margin-top: 4px;
+            display: block;
+            transition: all 0.2s ease;
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .shake-anim {
+            animation: errorShake 0.4s ease-in-out;
+        }
+
+        @media (max-width: 576px) {
+            .minimal-card {
+                padding: 26px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="minimal-register-container">
+        <div class="minimal-card">
+
+            <!-- Header -->
+            <div class="card-header-minimal">
+                <img src="{{ url_for('static', filename='club_logo.png') }}" alt="KKU Shooting Club" class="club-logo-img">
+                <h1 class="page-title">สมัครสมาชิกชมรม</h1>
+                <p class="page-subtitle">ชมรมกีฬายิงปืน มหาวิทยาลัยขอนแก่น (KKU Shooting Club)</p>
+            </div>
+
+            <!-- Flash Error Message -->
+            {% with messages = get_flashed_messages() %}
+            <div id="registerAlertBox" class="minimal-alert-danger" style="display: {% if messages %}flex{% else %}none{% endif %};">
+                <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+                <div id="registerAlertMsg">{% if messages %}{{ messages[0] }}{% endif %}</div>
+            </div>
+            {% endwith %}
+
+            <!-- Form -->
+            <form method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data" id="registerForm">
+
+                <!-- Avatar Upload (Centered Minimalist Circle) -->
+                <div class="avatar-upload-area">
+                    <input type="file" 
+                           id="profile_image" 
+                           name="profile_image" 
+                           accept="image/*" 
+                           style="display: none;" 
+                           onchange="previewAvatar(this)">
+
+                    <div class="avatar-circle-frame" onclick="document.getElementById('profile_image').click();" title="คลิกเพื่อเลือกรูป">
+                        <img id="avatarImg" class="avatar-img-preview" src="" alt="Avatar">
+                        <div id="avatarPlaceholder" class="avatar-icon-placeholder">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-avatar-chip" onclick="document.getElementById('profile_image').click();">
+                        <i class="bi bi-camera me-1"></i> เลือกรูปโปรไฟล์
+                    </button>
+                </div>
+
+                <!-- 1. ข้อมูลเข้าสู่ระบบ -->
+                <div class="minimal-section-heading">
+                    <i class="bi bi-shield-lock"></i> ข้อมูลเข้าสู่ระบบ
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label-minimal">ชื่อผู้ใช้ (Username) <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               name="username" 
+                               id="regUsername"
+                               class="form-control minimal-control" 
+                               value="{{ form_data.username if form_data else '' }}"
+                               placeholder="ภาษาอังกฤษหรือตัวเลข" 
+                               required 
+                               autocomplete="username">
+                        <small id="usernameInlineMsg" class="field-inline-msg text-secondary"></small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-minimal">รหัสผ่าน (Password) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   name="password" 
+                                   id="pwdInput" 
+                                   class="form-control minimal-control" 
+                                   value="{{ form_data.password if form_data else '' }}"
+                                   placeholder="กำหนดรหัสผ่าน" 
+                                   required 
+                                   autocomplete="new-password">
+                            <button class="btn btn-eye-toggle" type="button" onclick="togglePasswordVisibility()">
+                                <i class="bi bi-eye" id="pwdEyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. ข้อมูลส่วนตัว -->
+                <div class="minimal-section-heading mt-3">
+                    <i class="bi bi-person"></i> ข้อมูลส่วนตัว
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label-minimal">คำนำหน้า <span class="text-danger">*</span></label>
+                        <select name="prefix" id="regPrefix" class="form-select minimal-control" required>
+                            <option value="" disabled {% if not form_data or not form_data.get('prefix') %}selected{% endif %}>เลือก</option>
+                            <option value="นาย" {% if form_data and form_data.get('prefix') == 'นาย' %}selected{% endif %}>นาย</option>
+                            <option value="นางสาว" {% if form_data and form_data.get('prefix') == 'นางสาว' %}selected{% endif %}>นางสาว</option>
+                            <option value="นาง" {% if form_data and form_data.get('prefix') == 'นาง' %}selected{% endif %}>นาง</option>
+                            <option value="อาจารย์" {% if form_data and form_data.get('prefix') == 'อาจารย์' %}selected{% endif %}>อาจารย์</option>
+                            <option value="ดร." {% if form_data and form_data.get('prefix') == 'ดร.' %}selected{% endif %}>ดร.</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-minimal">ชื่อจริง <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               name="first_name" 
+                               id="regFirstName"
+                               class="form-control minimal-control" 
+                               value="{{ form_data.first_name if form_data else '' }}"
+                               placeholder="ชื่อจริง (ภาษาไทย)" 
+                               required>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label-minimal">นามสกุล <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               name="last_name" 
+                               id="regLastName"
+                               class="form-control minimal-control" 
+                               value="{{ form_data.last_name if form_data else '' }}"
+                               placeholder="นามสกุล (ภาษาไทย)" 
+                               required>
+                    </div>
+                </div>
+
+                <!-- 3. ข้อมูลนักศึกษา & ติดต่อ -->
+                <div class="minimal-section-heading mt-3">
+                    <i class="bi bi-mortarboard"></i> ข้อมูลนักศึกษาและการติดต่อ
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-minimal">รหัสนักศึกษา <span class="text-danger">*</span> <small class="text-info">(มีขีด -)</small></label>
+                        <input type="text" 
+                               name="student_id" 
+                               id="regStudentId"
+                               class="form-control minimal-control" 
+                               value="{{ form_data.student_id if form_data else '' }}"
+                               placeholder="เช่น 663050123-4" 
+                               required>
+                        <small id="studentIdHint" class="field-inline-msg text-secondary">เช่น 663050123-4</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-minimal">คณะ (Faculty) <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               name="faculty" 
+                               id="regFaculty"
+                               class="form-control minimal-control" 
+                               value="{{ form_data.faculty if form_data else '' }}"
+                               placeholder="เช่น วิศวกรรมศาสตร์ หรือ EN" 
+                               required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-minimal">ชั้นปี <span class="text-danger">*</span></label>
+                        <select name="academic_year" id="regAcademicYear" class="form-select minimal-control" required>
+                            <option value="" disabled {% if not form_data or not form_data.get('academic_year') %}selected{% endif %}>เลือกชั้นปี</option>
+                            <option value="1" {% if form_data and form_data.get('academic_year') == '1' %}selected{% endif %}>ปี 1</option>
+                            <option value="2" {% if form_data and form_data.get('academic_year') == '2' %}selected{% endif %}>ปี 2</option>
+                            <option value="3" {% if form_data and form_data.get('academic_year') == '3' %}selected{% endif %}>ปี 3</option>
+                            <option value="4" {% if form_data and form_data.get('academic_year') == '4' %}selected{% endif %}>ปี 4</option>
+                            <option value="5" {% if form_data and form_data.get('academic_year') == '5' %}selected{% endif %}>ปี 5 ขึ้นไป</option>
+                            <option value="บัณฑิตศึกษา" {% if form_data and form_data.get('academic_year') == 'บัณฑิตศึกษา' %}selected{% endif %}>บัณฑิตศึกษา</option>
+                            <option value="บุคลากร" {% if form_data and form_data.get('academic_year') == 'บุคลากร' %}selected{% endif %}>บุคลากร/อาจารย์</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-minimal">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+                        <input type="tel" 
+                               name="phone" 
+                               id="regPhone"
+                               class="form-control minimal-control" 
+                               value="{{ form_data.phone if form_data else '' }}"
+                               placeholder="เช่น 0812345678" 
+                               required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-minimal">KKU Mail (@kkumail.com) <span class="text-danger">*</span></label>
+                        <input type="email" 
+                               name="kku_mail" 
+                               id="regKkuMail"
+                               class="form-control minimal-control" 
+                               value="{{ form_data.kku_mail if form_data else '' }}"
+                               placeholder="เช่น student@kkumail.com" 
+                               required>
+                        <small id="kkuMailHint" class="field-inline-msg text-secondary">* บังคับใช้อีเมล @kkumail.com เท่านั้น</small>
+                    </div>
+                </div>
+
+                <!-- ข้อตกลงความปลอดภัยสนามยิงปืน (Safety Agreement) -->
+                <div class="safety-agreement-box mt-3 mb-3 p-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 12px;">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-shield-shaded text-warning fs-5"></i>
+                        <strong style="color: #fbbf24; font-size: 0.95rem;">กฎความปลอดภัย 4 ประการแห่งการใช้อาวุธปืน (Gun Safety Rules)</strong>
+                    </div>
+                    <ul class="text-secondary mb-2" style="font-size: 0.82rem; padding-left: 20px; line-height: 1.5;">
+                        <li>ปฏิบัติตามคำสั่งของนายสนาม (Range Officer) อย่างเคร่งครัด</li>
+                        <li>ถือว่าปืนทุกกระบอกมีกระสุนบรรจุอยู่เสมอ และไม่หันปากกระบอกปืนไปในทิศทางที่ไม่ปลอดภัย</li>
+                        <li>นิ้วอยู่นอกโกร่งไกเสมอ จนกว่าจะเล็งทาบเป้าหมายและพร้อมที่จะทำการยิง</li>
+                        <li>สวมใส่อุปกรณ์ป้องกันดวงตา (Eye Protection) และอุปกรณ์ลดเสียง (Ear Protection) ตลอดเวลาในสนาม</li>
+                    </ul>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="safetyCheck" required checked style="cursor: pointer;">
+                        <label class="form-check-label text-light" for="safetyCheck" style="font-size: 0.84rem; cursor: pointer;">
+                            ข้าพเจ้ายินยอมปฏิบัติตามกฎความปลอดภัยและระเบียบชมรมกีฬายิงปืน มข. อย่างเคร่งครัด <span class="text-danger">*</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-submit-minimal" id="submitRegBtn">
+                    <i class="bi bi-check-circle-fill me-2"></i> <span id="submitRegBtnText">ยืนยันการสมัครสมาชิก</span>
+                </button>
+
+            </form>
+
+            <!-- Bottom Link -->
+            <div class="card-footer-minimal">
+                <span>มีบัญชีสมาชิกอยู่แล้ว?</span>
+                <a href="{{ url_for('login') }}" class="link-login-clean">เข้าสู่ระบบที่นี่</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap 5, Cropper.js & Image Cropper Helper Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='cropper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='image_cropper_helper.js') }}"></script>
+
+    <!-- Script -->
+    <script>
+        // Photo preview & Interactive Crop
+        function previewAvatar(input) {
+            handleImageSelectForCrop(input, {
+                aspectRatio: 1 / 1,
+                modalTitle: 'ปรับแต่งและครอบตัดรูปโปรไฟล์สมาชิก',
+                previewImgId: 'avatarImg',
+                placeholderId: 'avatarPlaceholder'
+            });
+        }
+
+        // Toggle Password Visibility
+        function togglePasswordVisibility() {
+            const pwd = document.getElementById('pwdInput');
+            const icon = document.getElementById('pwdEyeIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                pwd.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+
+        // Live Validation: KKU Mail & Student ID (ตรวจและบอก ณ ตรงนั้นทันที)
+        const regStudentId = document.getElementById('regStudentId');
+        const studentIdHint = document.getElementById('studentIdHint');
+        if (regStudentId && studentIdHint) {
+            regStudentId.addEventListener('input', function() {
+                const val = this.value.trim();
+                if (!val) {
+                    studentIdHint.textContent = 'เช่น 663050123-4';
+                    studentIdHint.className = 'field-inline-msg text-secondary';
+                    this.classList.remove('input-error', 'input-valid');
+                } else if (val.includes('-')) {
+                    studentIdHint.textContent = '✓ มีเครื่องหมายขีดถูกต้อง';
+                    studentIdHint.className = 'field-inline-msg text-success';
+                    this.classList.remove('input-error');
+                    this.classList.add('input-valid');
+                } else {
+                    studentIdHint.textContent = '⚠️ ต้องมีเครื่องหมายขีด เช่น 663050123-4';
+                    studentIdHint.className = 'field-inline-msg text-warning';
+                    this.classList.remove('input-valid');
+                    this.classList.add('input-error');
+                }
+            });
+        }
+
+        const regKkuMail = document.getElementById('regKkuMail');
+        const kkuMailHint = document.getElementById('kkuMailHint');
+        if (regKkuMail && kkuMailHint) {
+            regKkuMail.addEventListener('input', function() {
+                const val = this.value.trim().toLowerCase();
+                if (!val) {
+                    kkuMailHint.textContent = '* บังคับใช้อีเมล @kkumail.com เท่านั้น';
+                    kkuMailHint.className = 'field-inline-msg text-secondary';
+                    this.classList.remove('input-error', 'input-valid');
+                } else if (val.endsWith('@kkumail.com')) {
+                    kkuMailHint.textContent = '✓ อีเมล KKU Mail ถูกต้อง';
+                    kkuMailHint.className = 'field-inline-msg text-success';
+                    this.classList.remove('input-error');
+                    this.classList.add('input-valid');
+                } else {
+                    kkuMailHint.textContent = '⚠️ ต้องลงท้ายด้วย @kkumail.com เท่านั้น';
+                    kkuMailHint.className = 'field-inline-msg text-danger';
+                    this.classList.remove('input-valid');
+                    this.classList.add('input-error');
+                }
+            });
+        }
+
+        // AJAX Form Intercept: ถ้ากรอกผิด ไม่ต้องรีเซ็ตฟอร์ม ให้แก้ ณ ช่องนั้นได้เลย
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            registerForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const submitBtn = document.getElementById('submitRegBtn');
+                const submitBtnText = document.getElementById('submitRegBtnText');
+                const alertBox = document.getElementById('registerAlertBox');
+                const alertMsg = document.getElementById('registerAlertMsg');
+
+                // Clear previous error styles
+                document.querySelectorAll('.minimal-control').forEach(el => el.classList.remove('input-error'));
+
+                const originalBtnHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> กำลังตรวจสอบข้อมูล...';
+
+                try {
+                    const formData = new FormData(registerForm);
+                    const res = await fetch(registerForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const data = await res.json();
+                    if (data.success) {
+                        submitBtn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> สมัครสมาชิกสำเร็จ!';
+                        window.location.href = data.redirect;
+                    } else {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHtml;
+
+                        if (alertBox && alertMsg) {
+                            alertMsg.textContent = data.message || 'ข้อมูลไม่ถูกต้อง';
+                            alertBox.style.display = 'flex';
+                            alertBox.classList.remove('shake-anim');
+                            void alertBox.offsetWidth;
+                            alertBox.classList.add('shake-anim');
+                        }
+
+                        // Map error to input field
+                        let targetInput = null;
+                        if (data.field === 'username') targetInput = document.getElementById('regUsername');
+                        else if (data.field === 'password') targetInput = document.getElementById('pwdInput');
+                        else if (data.field === 'student_id') targetInput = document.getElementById('regStudentId');
+                        else if (data.field === 'kku_mail') targetInput = document.getElementById('regKkuMail');
+                        else if (data.field === 'phone') targetInput = document.getElementById('regPhone');
+
+                        if (targetInput) {
+                            targetInput.classList.add('input-error');
+                            targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetInput.focus();
+                            if (targetInput.select) targetInput.select();
+                        } else {
+                            if (alertBox) alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                } catch (err) {
+                    registerForm.submit();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

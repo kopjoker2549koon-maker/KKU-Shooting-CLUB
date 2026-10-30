@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ระบบหลังบ้าน OPERATOR - Shooting Club</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Teko:wght@600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Kanit', sans-serif;
+            color: #ffffff;
+            user-select: none;
+            background-color: #000048;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ---------------- 1. ส่วนหัว: ป้ายหลัก + Username Badge ---------------- */
+        .top-section {
+            width: 100%;
+            height: 16vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 2px solid #000028;
+            background: linear-gradient(180deg, #000055 0%, #000038 100%);
+            padding-top: 4px;
+        }
+
+        .header-frame {
+            border: 5px solid #b0b8c8;
+            outline: 3px solid #334466;
+            outline-offset: -9px;
+            background: #000040;
+            padding: 4px 80px;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9), 0 6px 18px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-align: center;
+            color: #ffffff;
+            text-shadow: 3px 3px 8px #000000;
+        }
+
+        .user-badge-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 30, 0.9);
+            border: 2px solid #8899bb;
+            padding: 3px 18px 3px 8px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 3px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .user-avatar-frame {
+            width: 34px;
+            height: 34px;
+            border: 2px solid #b0b8c8;
+            background: #000018;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .user-avatar-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-role-tag {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.15rem;
+            letter-spacing: 2px;
+            color: #4a90e2;
+            text-shadow: 0 0 6px rgba(74, 144, 226, 0.6);
+        }
+
+        .user-name-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 3px #000;
+        }
+
+        /* ---------------- 2. ผังหลัก: 4 คลัง (63vw) + ประวัติ (37vw) ---------------- */
+        .main-content {
+            width: 100vw;
+            height: 78vh;
+            display: grid;
+            grid-template-columns: 63vw 37vw;
+        }
+
+        /* ปรับเป็น 5 คอลัมน์ (.177, .22 CCI, .22 RWS, เป้าปืนยาว, เป้าปืนสั้น) */
+        .ammo-three-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); 
+            border-right: 2px solid #000028;
+            height: 100%;
+        }
+
+        .col-ammo {
+            border-right: 1.5px solid rgba(136, 153, 187, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            padding: 6px 8px 12px 8px;
+        }
+        .col-ammo:last-child {
+            border-right: none;
+        }
+
+        .col-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 5px #000;
+            text-align: center;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .count-number {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 14px rgba(255, 255, 255, 0.8);
+        }
+
+        .ecg-screen {
+            width: 58px;
+            height: 30px;
+            background: #000510;
+            border: 2px solid #8899bb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: inset 0 0 8px #000;
+        }
+
+        .ecg-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* กรอบรูปภาพกระสุน/เป้า */
+        .ammo-box-frame {
+            width: 92%;
+            height: 20vh;
+            min-height: 160px;
+            border: 3.5px solid #b8c4d8;
+            background: rgba(0, 0, 15, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 5px 12px rgba(0, 0, 0, 0.7);
+        }
+
+        .ammo-box-frame img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.95));
+        }
+
+        /* กล่องชุดคำสั่ง (Action Card) */
+        .form-container {
+            width: 98%;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .action-card {
+            background: rgba(0, 10, 35, 0.65);
+            border: 1px solid rgba(136, 153, 187, 0.4);
+            padding: 5px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .action-row-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .input-label-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            text-shadow: 1px 1px 3px #000;
+            white-space: nowrap;
+        }
+
+        .retro-input {
+            width: 55%;
+            height: 32px;
+            background: #000030;
+            border: 2px solid #a0b0cc;
+            color: #ffffff;
+            text-align: center;
+            font-size: 1.15rem;
+            font-weight: 700;
+            font-family: 'Kanit', sans-serif;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .retro-input:focus {
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+            background: #000050;
+        }
+
+        .retro-note-input {
+            width: 100%;
+            height: 24px;
+            background: rgba(0, 0, 20, 0.85);
+            border: 1px solid #667799;
+            color: #aaccff;
+            text-align: left;
+            padding: 0 8px;
+            font-size: 0.85rem;
+            font-family: 'Kanit', sans-serif;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .retro-note-input:focus {
+            border-color: #ffffff;
+            color: #ffffff;
+            background: #000035;
+        }
+
+        /* ---------------- 3. คอลัมน์ขวา: ประวัติรายการ ---------------- */
+        .col-history {
+            display: flex;
+            flex-direction: column;
+            padding: 12px 25px 15px 20px;
+            height: 100%;
+        }
+
+        .history-header {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 5px #000;
+        }
+
+        .table-frame {
+            flex: 1;
+            max-height: 69vh;
+            overflow-y: auto;
+            border: 3px solid #8899bb;
+            background: rgba(0, 0, 25, 0.85);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
+        }
+
+        .retro-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.05rem;
+        }
+
+        .retro-table th {
+            position: sticky;
+            top: 0;
+            background: #000020;
+            border-bottom: 3px solid #8899bb;
+            padding: 11px 8px;
+            text-align: left;
+            color: #ffffff;
+            font-weight: 700;
+            z-index: 2;
+        }
+
+        .retro-table td {
+            padding: 9px 8px;
+            border-bottom: 1px solid rgba(136, 153, 187, 0.25);
+        }
+
+        /* ---------------- แท็บฝั่งขวา ---------------- */
+        .op-tabs-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .op-tab-btn {
+            background: #000028;
+            border: 2px solid #556688;
+            color: #8899bb;
+            padding: 6px 14px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .op-tab-btn:hover {
+            color: #ffffff;
+            border-color: #8899bb;
+        }
+
+        .op-tab-btn.active {
+            background: #001a4d;
+            border-color: #00e5ff;
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+        }
+
+        .tab-dot {
+            color: #00e5ff;
+            font-size: 0.8rem;
+        }
+
+        .pending-pill {
+            background: #ffcc00;
+            color: #000000;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 1px 8px;
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(255, 204, 0, 0.7);
+        }
+
+        /* ---------------- รายการรออนุมัติสลิป ---------------- */
+        .pending-list-container {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pending-order-card {
+            background: rgba(0, 12, 35, 0.95);
+            border: 2px solid #ffaa00;
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.2);
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .pending-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 170, 0, 0.35);
+            padding-bottom: 5px;
+        }
+
+        .pending-order-no {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: #ffcc00;
+            margin-right: 8px;
+        }
+
+        .pending-time {
+            font-size: 0.85rem;
+            color: #8899bb;
+        }
+
+        .pending-status-badge {
+            background: rgba(255, 204, 0, 0.2);
+            border: 1px solid #ffcc00;
+            color: #ffcc00;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .pending-user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            background: rgba(0, 20, 50, 0.4);
+            padding: 5px 8px;
+            border-left: 3px solid #00e5ff;
+        }
+
+        .user-name-highlight {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .user-sub-detail {
+            color: #8899bb;
+            font-size: 0.85rem;
+        }
+
+        .pending-items-box {
+            background: rgba(0, 5, 20, 0.7);
+            border: 1px solid #223355;
+            padding: 8px 10px;
+        }
+
+        .pending-items-text {
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .pending-stats-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #aaccff;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+            padding-top: 4px;
+        }
+
+        .pending-price-total {
+            color: #ffdd44;
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .pending-slip-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 15, 40, 0.6);
+            border: 1px dashed #446699;
+            padding: 8px 10px;
+        }
+
+        .slip-thumb-wrap {
+            position: relative;
+            width: 58px;
+            height: 76px;
+            cursor: pointer;
+            overflow: hidden;
+            border: 1.5px solid #8899bb;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slip-img-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s;
+        }
+
+        .slip-thumb-wrap:hover .slip-img-thumb {
+            transform: scale(1.1);
+        }
+
+        .slip-hover-zoom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            font-size: 0.7rem;
+            text-align: center;
+            color: #00e5ff;
+            padding: 2px 0;
+        }
+
+        .slip-meta-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .slip-attached-text {
+            color: #00ff66;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .btn-inspect-action {
+            background: #002244;
+            border: 1px solid #00e5ff;
+            color: #00e5ff;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.9rem;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-inspect-action:hover {
+            background: #00e5ff;
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+        }
+
+        .no-slip-warning {
+            color: #ff9944;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .pending-actions-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .btn-approve-action {
+            background: #006622;
+            border: 2px solid #00ff66;
+            color: #ffffff;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-approve-action:hover {
+            background: #009933;
+            box-shadow: 0 0 14px rgba(0, 255, 102, 0.7);
+        }
+
+        .btn-reject-action {
+            background: #550000;
+            border: 2px solid #ff3333;
+            color: #ff9999;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reject-action:hover {
+            background: #880000;
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(255, 51, 51, 0.7);
+        }
+
+        .empty-pending-box {
+            text-align: center;
+            padding: 60px 20px;
+            color: #667799;
+        }
+
+        .empty-check-icon {
+            font-size: 3rem;
+            color: #00ff66;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(0, 255, 102, 0.6);
+        }
+
+        .empty-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .empty-desc {
+            font-size: 0.95rem;
+            color: #8899bb;
+        }
+
+        .reject-preset-chip {
+            background: #000030;
+            border: 1px solid #556688;
+            color: #ccddee;
+            font-size: 0.82rem;
+            font-family: 'Kanit', sans-serif;
+            padding: 3px 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .reject-preset-chip:hover {
+            border-color: #ff4444;
+            color: #ffffff;
+            background: #330000;
+        }
+
+        .btn-inspect-mini {
+            background: #002244;
+            border: 1px solid #00e5ff;
+            color: #00e5ff;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+        .btn-inspect-mini:hover {
+            background: #00e5ff;
+            color: #000;
+        }
+
+        /* ---------------- 4. แถบปุ่มมุมซ้ายล่าง ---------------- */
+        .bottom-bar {
+            width: 100%;
+            height: 6vh;
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+            gap: 12px;
+            background: #000038;
+            border-top: 1px solid #000020;
+        }
+
+        .retro-btn {
+            border: 2px solid #8899bb;
+            background: #000020;
+            color: #ff2222;
+            padding: 5px 18px;
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .retro-btn:hover {
+            border-color: #ffffff;
+            background: #880000;
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+        }
+
+        .toast-popup {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: #00883a;
+            border: 3px solid #ffffff;
+            color: #fff;
+            padding: 10px 22px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            z-index: 9999;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        /* ---------------- 5. POP-UP BOX ยืนยัน (RE THEME) ---------------- */
+        .confirm-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 20, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-modal-box {
+            width: 420px;
+            background: #000033;
+            border: 3px double #ffffff;
+            outline: 2px solid #5577aa;
+            outline-offset: -6px;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.95), 0 0 25px rgba(0, 0, 0, 0.9);
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            animation: modalFadeZoom 0.15s ease-out;
+        }
+        @keyframes modalFadeZoom {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 2px;
+            color: #ffffff;
+            border-bottom: 2px solid #8899bb;
+            padding-bottom: 6px;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        .modal-info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(0, 5, 20, 0.85);
+            border: 1.5px solid #556688;
+            padding: 12px 16px;
+        }
+
+        .modal-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.15rem;
+        }
+
+        .modal-label {
+            color: #90a8cc;
+        }
+
+        .modal-val {
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 4px;
+        }
+
+        .modal-btn {
+            font-family: 'Kanit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            padding: 5px 26px;
+            border: 2px solid #8899bb;
+            background: #000020;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .modal-btn-confirm {
+            color: #00ff66;
+            border-color: #00ff66;
+        }
+        .modal-btn-confirm:hover, .modal-btn-confirm:focus {
+            background: #00883a;
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(0, 255, 102, 0.9);
+            outline: none;
+        }
+
+        .modal-btn-cancel {
+            color: #ff3333;
+            border-color: #ff3333;
+        }
+        .modal-btn-cancel:hover {
+            background: #880000;
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(255, 51, 51, 0.9);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ดึงค่ายอดกระสุนและเป้าของทั้ง 5 รายการ -->
+    {% set ns = namespace(qty_177=0, qty_22_cci=0, qty_22_rws=0, qty_rifle_tgt=0, qty_pistol_tgt=0) %}
+    {% for item in inventory %}
+        {% if item.ammo_type == '.177' %}
+            {% set ns.qty_177 = item.quantity %}
+        {% elif item.ammo_type == '.22 LR (CCI)' %}
+            {% set ns.qty_22_cci = item.quantity %}
+        {% elif item.ammo_type == '.22 LR (RWS)' %}
+            {% set ns.qty_22_rws = item.quantity %}
+        {% elif item.ammo_type == 'เป้าปืนยาว' or item.ammo_type == 'เป้ากระดาษ' %}
+            {% set ns.qty_rifle_tgt = item.quantity %}
+        {% elif item.ammo_type == 'เป้าปืนสั้น' %}
+            {% set ns.qty_pistol_tgt = item.quantity %}
+        {% endif %}
+    {% endfor %}
+
+    <!-- ตรรกะสีและสปีด ECG ของ .177 -->
+    {% if ns.qty_177 < 300 %}{% set ecg_color_177 = '#ff2222' %}{% set ecg_dur_177 = '0.7s' %}
+    {% elif ns.qty_177 < 500 %}{% set ecg_color_177 = '#ffcc00' %}{% set ecg_dur_177 = '1.1s' %}
+    {% else %}{% set ecg_color_177 = '#00ff66' %}{% set ecg_dur_177 = '1.5s' %}{% endif %}
+
+    <!-- ตรรกะสีและสปีด ECG ของ .22 CCI -->
+    {% if ns.qty_22_cci < 300 %}{% set ecg_color_cci = '#ff2222' %}{% set ecg_dur_cci = '0.7s' %}
+    {% elif ns.qty_22_cci < 500 %}{% set ecg_color_cci = '#ffcc00' %}{% set ecg_dur_cci = '1.1s' %}
+    {% else %}{% set ecg_color_cci = '#00ff66' %}{% set ecg_dur_cci = '1.5s' %}{% endif %}
+
+    <!-- ตรรกะสีและสปีด ECG ของ .22 RWS -->
+    {% if ns.qty_22_rws < 300 %}{% set ecg_color_rws = '#ff2222' %}{% set ecg_dur_rws = '0.7s' %}
+    {% elif ns.qty_22_rws < 500 %}{% set ecg_color_rws = '#ffcc00' %}{% set ecg_dur_rws = '1.1s' %}
+    {% else %}{% set ecg_color_rws = '#00ff66' %}{% set ecg_dur_rws = '1.5s' %}{% endif %}
+
+    <!-- ตรรกะสีและสปีด ECG ของ เป้าปืนยาว -->
+    {% if ns.qty_rifle_tgt < 300 %}{% set ecg_color_rifle_tgt = '#ff2222' %}{% set ecg_dur_rifle_tgt = '0.7s' %}
+    {% elif ns.qty_rifle_tgt < 500 %}{% set ecg_color_rifle_tgt = '#ffcc00' %}{% set ecg_dur_rifle_tgt = '1.1s' %}
+    {% else %}{% set ecg_color_rifle_tgt = '#00ff66' %}{% set ecg_dur_rifle_tgt = '1.5s' %}{% endif %}
+
+    <!-- ตรรกะสีและสปีด ECG ของ เป้าปืนสั้น -->
+    {% if ns.qty_pistol_tgt < 300 %}{% set ecg_color_pistol_tgt = '#ff2222' %}{% set ecg_dur_pistol_tgt = '0.7s' %}
+    {% elif ns.qty_pistol_tgt < 500 %}{% set ecg_color_pistol_tgt = '#ffcc00' %}{% set ecg_dur_pistol_tgt = '1.1s' %}
+    {% else %}{% set ecg_color_pistol_tgt = '#00ff66' %}{% set ecg_dur_pistol_tgt = '1.5s' %}{% endif %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="toast-popup">{{ messages[0] }}</div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- 1. ส่วนหัว: ป้ายหลัก + Username Badge -->
+    <div class="top-section">
+        <div class="header-frame">
+            <h1 class="header-title">ระบบหลังบ้าน OPERATOR</h1>
+        </div>
+        <div class="user-badge-bar">
+            <div class="user-avatar-frame">
+                <img src="{{ url_for('static', filename='leon_board.png') }}" onerror="this.src='https://placehold.co/60x60/000030/ffffff?text=OP';">
+            </div>
+            <div class="user-info">
+                <span class="user-role-tag">OPERATOR CLEARANCE :</span>
+                <span class="user-name-text">{{ session.get('username', 'OPERATOR') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. ผังหลัก -->
+    <div class="main-content">
+
+        <!-- ฝั่งซ้าย: แบ่ง 4 คอลัมน์ (.177, .22 CCI, .22 RWS, เป้ากระดาษ) -->
+        <div class="ammo-three-grid">
+
+            <!-- 1. คลัง .177 -->
+            <div class="col-ammo">
+                <div class="col-title">คลัง .177</div>
+                <div class="status-container">
+                    <span class="count-number">{{ ns.qty_177 }} นัด</span>
+                    <div class="ecg-screen" style="border-color: {{ ecg_color_177 }};">
+                        <svg class="ecg-svg" viewBox="0 0 100 40">
+                            <path d="M0,20 L30,20 L35,8 L42,32 L48,15 L52,24 L56,20 L100,20" fill="none" stroke="{{ ecg_color_177 }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <animate attributeName="stroke-dasharray" values="0,150;150,0" dur="{{ ecg_dur_177 }}" repeatCount="indefinite" />
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="ammo-box-frame">
+                    <img src="{{ url_for('static', filename='ammo_177.png') }}" onerror="this.src='https://placehold.co/240x160/000030/ffffff?text=.177';">
+                </div>
+
+                <div class="form-container">
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เพิ่ม</span>
+                            <input type="number" class="retro-input input-amount" data-action="add_inventory" data-ammo=".177" min="1" placeholder="นัด" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">ลด</span>
+                            <input type="number" class="retro-input input-amount" data-action="sub_inventory" data-ammo=".177" min="1" placeholder="นัด" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เป็น</span>
+                            <input type="number" class="retro-input input-amount" data-action="set_inventory" data-ammo=".177" min="0" placeholder="นัด" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. คลัง .22 LR (CCI) -->
+            <div class="col-ammo">
+                <div class="col-title">คลัง .22 (CCI)</div>
+                <div class="status-container">
+                    <span class="count-number">{{ ns.qty_22_cci }} นัด</span>
+                    <div class="ecg-screen" style="border-color: {{ ecg_color_cci }};">
+                        <svg class="ecg-svg" viewBox="0 0 100 40">
+                            <path d="M0,20 L30,20 L35,10 L40,30 L46,12 L50,25 L55,20 L100,20" fill="none" stroke="{{ ecg_color_cci }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <animate attributeName="stroke-dasharray" values="0,150;150,0" dur="{{ ecg_dur_cci }}" repeatCount="indefinite" />
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="ammo-box-frame">
+                    <img src="{{ url_for('static', filename='ammo_22_cci.png') }}" onerror="this.src='https://placehold.co/240x160/000030/ffffff?text=.22+CCI';">
+                </div>
+
+                <div class="form-container">
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เพิ่ม</span>
+                            <input type="number" class="retro-input input-amount" data-action="add_inventory" data-ammo=".22 LR (CCI)" min="1" placeholder="นัด" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">ลด</span>
+                            <input type="number" class="retro-input input-amount" data-action="sub_inventory" data-ammo=".22 LR (CCI)" min="1" placeholder="นัด" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เป็น</span>
+                            <input type="number" class="retro-input input-amount" data-action="set_inventory" data-ammo=".22 LR (CCI)" min="0" placeholder="นัด" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. คลัง .22 LR (RWS) -->
+            <div class="col-ammo">
+                <div class="col-title">คลัง .22 (RWS)</div>
+                <div class="status-container">
+                    <span class="count-number">{{ ns.qty_22_rws }} นัด</span>
+                    <div class="ecg-screen" style="border-color: {{ ecg_color_rws }};">
+                        <svg class="ecg-svg" viewBox="0 0 100 40">
+                            <path d="M0,20 L30,20 L35,10 L40,30 L46,12 L50,25 L55,20 L100,20" fill="none" stroke="{{ ecg_color_rws }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <animate attributeName="stroke-dasharray" values="0,150;150,0" dur="{{ ecg_dur_rws }}" repeatCount="indefinite" />
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="ammo-box-frame">
+                    <img src="{{ url_for('static', filename='ammo_22_rws.png') }}" onerror="this.src='https://placehold.co/240x160/000030/ffffff?text=.22+RWS';">
+                </div>
+
+                <div class="form-container">
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เพิ่ม</span>
+                            <input type="number" class="retro-input input-amount" data-action="add_inventory" data-ammo=".22 LR (RWS)" min="1" placeholder="นัด" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">ลด</span>
+                            <input type="number" class="retro-input input-amount" data-action="sub_inventory" data-ammo=".22 LR (RWS)" min="1" placeholder="นัด" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เป็น</span>
+                            <input type="number" class="retro-input input-amount" data-action="set_inventory" data-ammo=".22 LR (RWS)" min="0" placeholder="นัด" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. คลังเป้าปืนยาว -->
+            <div class="col-ammo">
+                <div class="col-title">คลังเป้าปืนยาว</div>
+                <div class="status-container">
+                    <span class="count-number">{{ ns.qty_rifle_tgt }} แผ่น</span>
+                    <div class="ecg-screen" style="border-color: {{ ecg_color_rifle_tgt }};">
+                        <svg class="ecg-svg" viewBox="0 0 100 40">
+                            <path d="M0,20 L30,20 L35,10 L40,30 L46,12 L50,25 L55,20 L100,20" fill="none" stroke="{{ ecg_color_rifle_tgt }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <animate attributeName="stroke-dasharray" values="0,150;150,0" dur="{{ ecg_dur_rifle_tgt }}" repeatCount="indefinite" />
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="ammo-box-frame">
+                    <img src="{{ url_for('static', filename='target_paper.png') }}" onerror="this.src='https://placehold.co/240x160/000030/ffffff?text=RIFLE+TARGET';">
+                </div>
+
+                <div class="form-container">
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เพิ่ม</span>
+                            <input type="number" class="retro-input input-amount" data-action="add_inventory" data-ammo="เป้าปืนยาว" min="1" placeholder="แผ่น" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">ลด</span>
+                            <input type="number" class="retro-input input-amount" data-action="sub_inventory" data-ammo="เป้าปืนยาว" min="1" placeholder="แผ่น" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เป็น</span>
+                            <input type="number" class="retro-input input-amount" data-action="set_inventory" data-ammo="เป้าปืนยาว" min="0" placeholder="แผ่น" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. คลังเป้าปืนสั้น -->
+            <div class="col-ammo">
+                <div class="col-title">คลังเป้าปืนสั้น</div>
+                <div class="status-container">
+                    <span class="count-number">{{ ns.qty_pistol_tgt }} แผ่น</span>
+                    <div class="ecg-screen" style="border-color: {{ ecg_color_pistol_tgt }};">
+                        <svg class="ecg-svg" viewBox="0 0 100 40">
+                            <path d="M0,20 L30,20 L35,10 L40,30 L46,12 L50,25 L55,20 L100,20" fill="none" stroke="{{ ecg_color_pistol_tgt }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <animate attributeName="stroke-dasharray" values="0,150;150,0" dur="{{ ecg_dur_pistol_tgt }}" repeatCount="indefinite" />
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="ammo-box-frame">
+                    <img src="{{ url_for('static', filename='target_paper.png') }}" onerror="this.src='https://placehold.co/240x160/000030/ffffff?text=PISTOL+TARGET';">
+                </div>
+
+                <div class="form-container">
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เพิ่ม</span>
+                            <input type="number" class="retro-input input-amount" data-action="add_inventory" data-ammo="เป้าปืนสั้น" min="1" placeholder="แผ่น" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">ลด</span>
+                            <input type="number" class="retro-input input-amount" data-action="sub_inventory" data-ammo="เป้าปืนสั้น" min="1" placeholder="แผ่น" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                    <div class="action-card">
+                        <div class="action-row-main">
+                            <span class="input-label-text">เป็น</span>
+                            <input type="number" class="retro-input input-amount" data-action="set_inventory" data-ammo="เป้าปืนสั้น" min="0" placeholder="แผ่น" autocomplete="off">
+                        </div>
+                        <input type="text" class="retro-note-input input-note" placeholder="หมายเหตุ" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ฝั่งขวา: แท็บสลับ (1. รอตรวจสอบสลิป, 2. ประวัติธุรกรรม, 3. ประวัติสลิป) -->
+        <div class="col-history">
+            <div class="op-tabs-bar">
+                <button type="button" class="op-tab-btn {% if pending_orders|length > 0 %}active{% endif %}" id="tabBtnPending" onclick="switchOpTab('pending')">
+                    <span class="tab-dot">●</span> รอตรวจสอบสลิป
+                    <span class="pending-pill" id="pendingPillCount">{{ pending_orders|length }}</span>
+                </button>
+                <button type="button" class="op-tab-btn {% if pending_orders|length == 0 %}active{% endif %}" id="tabBtnHistory" onclick="switchOpTab('history')">
+                    ประวัติธุรกรรมคลัง
+                </button>
+                <button type="button" class="op-tab-btn" id="tabBtnPastOrders" onclick="switchOpTab('pastOrders')">
+                    ประวัติคำสั่งซื้อสลิป
+                </button>
+            </div>
+
+            <!-- Pane 1: รายการรอตรวจสอบสลิป -->
+            <div class="table-frame" id="panePending" {% if pending_orders|length == 0 %}style="display: none;"{% endif %}>
+                <div class="pending-list-container">
+                    {% for order in pending_orders %}
+                    <div class="pending-order-card">
+                        <div class="pending-card-top">
+                            <div>
+                                <span class="pending-order-no">{{ order.order_no }}</span>
+                                <span class="pending-time">{{ order.created_at }}</span>
+                            </div>
+                            <span class="pending-status-badge">🟡 รออนุมัติ</span>
+                        </div>
+
+                        <div class="pending-user-info">
+                            <span class="user-name-highlight">👤 {{ order.first_name or '' }} {{ order.last_name or '' }} (@{{ order.username }})</span>
+                            <span class="user-sub-detail">รหัส: {{ order.student_id or '-' }} | โทร: {{ order.phone or '-' }}</span>
+                        </div>
+
+                        <div class="pending-items-box">
+                            <div class="pending-items-text">{{ order.items_summary }}</div>
+                            <div class="pending-stats-line">
+                                <span>กระสุนรวม: <strong>{{ order.total_bullets }}</strong> นัด</span>
+                                <span>เป้ารวม: <strong>{{ order.total_targets }}</strong> แผ่น</span>
+                                <span class="pending-price-total">ยอดเงิน: {{ order.total_price }} ฿</span>
+                            </div>
+                        </div>
+
+                        <div class="pending-slip-row">
+                            {% if order.slip_image %}
+                            <div class="slip-thumb-wrap" onclick="viewFullSlip('{{ url_for('static', filename='slips/' + order.slip_image) }}', '{{ order.order_no }}', '{{ order.first_name }} {{ order.last_name }} (@{{ order.username }})', '{{ order.total_price }}', '{{ order.id }}')">
+                                <img src="{{ url_for('static', filename='slips/' + order.slip_image) }}" class="slip-img-thumb" alt="Slip">
+                                <span class="slip-hover-zoom">🔍 ดูสลิป</span>
+                            </div>
+                            <div class="slip-meta-text">
+                                <div class="slip-attached-text">✓ แนบสลิปเรียบร้อย</div>
+                                <button type="button" class="btn-inspect-action" onclick="viewFullSlip('{{ url_for('static', filename='slips/' + order.slip_image) }}', '{{ order.order_no }}', '{{ order.first_name }} {{ order.last_name }} (@{{ order.username }})', '{{ order.total_price }}', '{{ order.id }}')">
+                                    🔍 ตรวจสอบสลิปขนาดเต็ม
+                                </button>
+                            </div>
+                            {% else %}
+                            <div class="no-slip-warning">
+                                ⚠️ ไม่พบไฟล์สลิปหลักฐานโอนเงิน
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="pending-actions-row">
+                            <form method="POST" style="flex: 1;" onsubmit="return confirm('ยืนยันอนุมัติคำสั่งซื้อ {{ order.order_no }} ? กระสุน {{ order.total_bullets }} นัด และเป้า {{ order.total_targets }} แผ่น จะถูกหักจากคลังและโอนเข้ากระเป๋าสมาชิกทันที');">
+                                <input type="hidden" name="action" value="approve_order">
+                                <input type="hidden" name="order_id" value="{{ order.id }}">
+                                <button type="submit" class="btn-approve-action">✓ อนุมัติสลิป & โอนของเข้ากระเป๋า</button>
+                            </form>
+                            <button type="button" class="btn-reject-action" onclick="openRejectOrderModal('{{ order.id }}', '{{ order.order_no }}', '{{ order.first_name or order.username }}')">
+                                ✕ ปฏิเสธ
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty-pending-box">
+                        <div class="empty-check-icon">✓</div>
+                        <div class="empty-title">ไม่มีสลิปรอตรวจสอบในขณะนี้</div>
+                        <div class="empty-desc">ทุกคำสั่งซื้อได้รับการตรวจสอบและดำเนินการเรียบร้อยแล้ว</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Pane 2: ประวัติธุรกรรมคลังทั้งหมด (เดิม) -->
+            <div class="table-frame" id="paneHistory" {% if pending_orders|length > 0 %}style="display: none;"{% endif %}>
+                <table class="retro-table">
+                    <thead>
+                        <tr>
+                            <th>ผู้ใช้</th>
+                            <th>รายการ</th>
+                            <th>ประเภท</th>
+                            <th>จำนวน</th>
+                            <th>หมายเหตุ</th>
+                            <th>วัน-เวลา</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in history %}
+                        <tr>
+                            <td>{{ row.username }}</td>
+                            <td>
+                                {% if row.action == 'Buy' %}<span style="color: #44ff44; font-weight:700;">ซื้อ</span>
+                                {% elif row.action == 'Withdraw' %}<span style="color: #ffaa00; font-weight:700;">เบิก</span>
+                                {% elif row.action == 'Return' %}<span style="color: #00ffff; font-weight:700;">คืน</span>
+                                {% elif row.action == 'Operator_Sub' %}<span style="color: #ff8800; font-weight:700;">ลดคลัง</span>
+                                {% else %}<span style="color: #ff4444; font-weight:700;">ปรับคลัง</span>{% endif %}
+                            </td>
+                            <td>{{ row.ammo_type }}</td>
+                            <td style="font-weight: 700; font-size: 1.25rem;">{{ row.amount }}</td>
+                            <td style="color: #ccddee; font-size: 0.95rem;">{{ row.note or '-' }}</td>
+                            <td style="color: #99aabb; font-size: 0.95rem;">{{ row.timestamp }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #667799; padding: 40px;">ไม่มีข้อมูลรายการ</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pane 3: ประวัติคำสั่งซื้อสลิป -->
+            <div class="table-frame" id="panePastOrders" style="display: none;">
+                <table class="retro-table">
+                    <thead>
+                        <tr>
+                            <th>เลขออเดอร์</th>
+                            <th>ผู้สั่ง</th>
+                            <th>รายการ</th>
+                            <th>ยอดเงิน</th>
+                            <th>สถานะ</th>
+                            <th>ผู้ตรวจ</th>
+                            <th>สลิป</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ord in past_orders %}
+                        <tr>
+                            <td style="font-family:'Teko'; font-size:1.15rem; color:#ccddee;">{{ ord.order_no }}</td>
+                            <td>{{ ord.username }}</td>
+                            <td style="font-size:0.9rem;">{{ ord.items_summary }}</td>
+                            <td style="font-weight:700; color:#ffdd44;">{{ ord.total_price }} ฿</td>
+                            <td>
+                                {% if ord.status == 'approved' %}
+                                    <span style="color: #00ff66; font-weight: 700;">✓ อนุมัติแล้ว</span>
+                                {% else %}
+                                    <span style="color: #ff4444; font-weight: 700;" title="{{ ord.reject_reason }}">✕ ปฏิเสธ</span>
+                                    <div style="font-size: 0.75rem; color: #ff8888;">{{ ord.reject_reason or '' }}</div>
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 0.85rem; color: #8899bb;">{{ ord.reviewed_by or '-' }}<br><small>{{ ord.reviewed_at or '' }}</small></td>
+                            <td>
+                                {% if ord.slip_image %}
+                                    <button type="button" class="btn-inspect-mini" onclick="viewFullSlip('{{ url_for('static', filename='slips/' + ord.slip_image) }}', '{{ ord.order_no }}', '{{ ord.username }}', '{{ ord.total_price }}', null)">สลิป</button>
+                                {% else %}
+                                    <span style="color:#667799; font-size:0.8rem;">ไม่มี</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #667799; padding: 40px;">ยังไม่มีประวัติการอนุมัติคำสั่งซื้อ</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. แถบปุ่มมุมซ้ายล่าง -->
+    <div class="bottom-bar">
+        <a href="/logout" class="retro-btn">ออกจากระบบ</a>
+        <button type="button" class="retro-btn" onclick="alert('กรุณาติดต่อ GOD Clearance (KoldP) เพื่อดำเนินการแก้ไขรหัสผ่าน');">เปลี่ยนรหัสผ่าน</button>
+    </div>
+
+    <!-- 🌟 5. POP-UP BOX ยืนยันข้อมูลกลางจอ (RE Classic) 🌟 -->
+    <div id="confirmOverlay" class="confirm-modal-overlay">
+        <div class="confirm-modal-box">
+            <div class="modal-header-title">CONFIRM INVENTORY</div>
+            <div class="modal-info-list">
+                <div class="modal-info-row">
+                    <span class="modal-label">รายการ:</span>
+                    <span class="modal-val" id="modalActionText">-</span>
+                </div>
+                <div class="modal-info-row">
+                    <span class="modal-label">ชนิด/ประเภท:</span>
+                    <span class="modal-val" id="modalAmmoText">-</span>
+                </div>
+                <div class="modal-info-row">
+                    <span class="modal-label">จำนวน:</span>
+                    <span class="modal-val" id="modalAmountText" style="color: #00ff66;">-</span>
+                </div>
+                <div class="modal-info-row">
+                    <span class="modal-label">หมายเหตุ:</span>
+                    <span class="modal-val" id="modalNoteText" style="color: #aaccff;">-</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-confirm" id="btnConfirmSubmit">ยืนยัน</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeConfirmModal()">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 MODAL แสดงสลิปขนาดเต็ม (SLIP LIGHTBOX) 🌟 -->
+    <div id="slipLightboxOverlay" class="confirm-modal-overlay">
+        <div class="confirm-modal-box" style="width: 560px; max-width: 96vw; max-height: 94vh; padding: 18px;">
+            <div class="modal-header-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span id="lbOrderTitle" style="color: #00e5ff;">INSPECT PAYMENT SLIP</span>
+                <button type="button" onclick="closeSlipLightbox()" style="background:transparent; border:none; color:#8899bb; font-size:1.8rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            
+            <div id="lbOrderMeta" style="font-size: 0.95rem; color: #ccddee; background: rgba(0, 10, 30, 0.7); padding: 8px 12px; border: 1px solid #334466;">
+                <!-- Filled via JS -->
+            </div>
+
+            <div style="flex: 1; min-height: 250px; max-height: 52vh; overflow: auto; text-align: center; background: #000; border: 2px solid #556688; padding: 6px; display: flex; align-items: center; justify-content: center;">
+                <img id="lbSlipImage" src="" style="max-width: 100%; max-height: 50vh; object-fit: contain;" alt="Slip Full Preview">
+            </div>
+
+            <div class="modal-actions" id="lbActionsBox" style="margin-top: 8px;">
+                <form method="POST" id="lbApproveForm" style="flex: 1;" onsubmit="return confirm('ยืนยันอนุมัติคำสั่งซื้อนี้?');">
+                    <input type="hidden" name="action" value="approve_order">
+                    <input type="hidden" name="order_id" id="lbApproveOrderId">
+                    <button type="submit" class="btn-approve-action" style="width: 100%; height: 100%; padding: 10px;">✓ อนุมัติสลิปนี้</button>
+                </form>
+                <button type="button" class="btn-reject-action" id="lbRejectBtn" style="padding: 10px 18px;">✕ ปฏิเสธ</button>
+                <button type="button" class="retro-btn" onclick="closeSlipLightbox()" style="padding: 10px 18px;">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 MODAL ปฏิเสธคำสั่งซื้อ (REJECT ORDER) 🌟 -->
+    <div id="rejectOrderModal" class="confirm-modal-overlay">
+        <div class="confirm-modal-box" style="width: 440px; max-width: 95vw;">
+            <div class="modal-header-title" style="color: #ff4444; border-color: #aa2222;">
+                REJECT ORDER CONFIRMATION
+            </div>
+            <div id="rejectModalInfo" style="font-size: 0.95rem; color: #ccddee; padding: 4px 0;"></div>
+
+            <form method="POST">
+                <input type="hidden" name="action" value="reject_order">
+                <input type="hidden" name="order_id" id="rejectTargetOrderId">
+
+                <div style="font-size: 0.88rem; color: #aaccff; margin-bottom: 6px;">เลือกเหตุผลยอดนิยม:</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+                    <button type="button" class="reject-preset-chip" onclick="setRejectText('ยอดเงินในสลิปไม่ตรงกับยอดสั่งซื้อ')">ยอดไม่ตรง</button>
+                    <button type="button" class="reject-preset-chip" onclick="setRejectText('สลิปซ้ำ / เคยถูกใช้งานไปแล้ว')">สลิปซ้ำ</button>
+                    <button type="button" class="reject-preset-chip" onclick="setRejectText('ภาพไม่ชัดเจน ไม่สามารถตรวจสอบวันเวลาและยอดเงินได้')">ภาพไม่ชัด</button>
+                    <button type="button" class="reject-preset-chip" onclick="setRejectText('ไม่พบยอดเงินเข้าบัญชีชมรม')">ไม่พบยอดเงิน</button>
+                    <button type="button" class="reject-preset-chip" onclick="setRejectText('ไม่ใช่สลิปหลักฐานการโอนเงิน')">ไม่ใช่สลิป</button>
+                </div>
+
+                <div style="font-size: 0.88rem; color: #aaccff; margin-bottom: 4px;">ระบุเหตุผลการปฏิเสธ (สมาชิกจะเห็นข้อความนี้):</div>
+                <textarea name="reject_reason" id="rejectReasonField" rows="3" class="retro-input" style="width: 100%; height: auto; text-align: left; padding: 8px; font-size: 0.95rem; resize: vertical;" placeholder="พิมพ์เหตุผลที่ปฏิเสธ..." required></textarea>
+
+                <div class="modal-actions" style="margin-top: 14px;">
+                    <button type="submit" class="btn-reject-action" style="flex: 1; padding: 10px;">ยืนยันปฏิเสธ</button>
+                    <button type="button" class="retro-btn" onclick="closeRejectOrderModal()" style="padding: 10px 20px;">ยกเลิก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ฟอร์มซ่อนตัวเดียวสำหรับส่งข้อมูลไปที่ Backend เมื่อกดยืนยัน -->
+    <form id="hiddenSubmitForm" method="POST" style="display: none;">
+        <input type="hidden" name="action" id="hiddenAction">
+        <input type="hidden" name="ammo_type" id="hiddenAmmo">
+        <input type="hidden" name="amount" id="hiddenAmount">
+        <input type="hidden" name="note" id="hiddenNote">
+    </form>
+
+    <script>
+        let pendingData = null;
+
+        // สลับแท็บฝั่งขวา
+        function switchOpTab(tab) {
+            const btnPending = document.getElementById('tabBtnPending');
+            const btnHistory = document.getElementById('tabBtnHistory');
+            const btnPastOrders = document.getElementById('tabBtnPastOrders');
+
+            const panePending = document.getElementById('panePending');
+            const paneHistory = document.getElementById('paneHistory');
+            const panePastOrders = document.getElementById('panePastOrders');
+
+            btnPending.classList.remove('active');
+            btnHistory.classList.remove('active');
+            btnPastOrders.classList.remove('active');
+
+            panePending.style.display = 'none';
+            paneHistory.style.display = 'none';
+            panePastOrders.style.display = 'none';
+
+            if (tab === 'pending') {
+                btnPending.classList.add('active');
+                panePending.style.display = 'block';
+            } else if (tab === 'history') {
+                btnHistory.classList.add('active');
+                paneHistory.style.display = 'block';
+            } else if (tab === 'pastOrders') {
+                btnPastOrders.classList.add('active');
+                panePastOrders.style.display = 'block';
+            }
+        }
+
+        // เปิดสลิปขนาดเต็ม
+        function viewFullSlip(imgUrl, orderNo, userText, priceText, orderId) {
+            document.getElementById('lbSlipImage').src = imgUrl;
+            document.getElementById('lbOrderTitle').innerText = 'INSPECT SLIP: ' + orderNo;
+            document.getElementById('lbOrderMeta').innerHTML = '<strong>ผู้สั่ง:</strong> ' + userText + ' | <span style="color:#ffdd44;"><strong>ยอดชำระ:</strong> ' + priceText + ' ฿</span>';
+            
+            const actionsBox = document.getElementById('lbActionsBox');
+            if (orderId) {
+                document.getElementById('lbApproveOrderId').value = orderId;
+                document.getElementById('lbApproveForm').style.display = 'block';
+                const rejectBtn = document.getElementById('lbRejectBtn');
+                rejectBtn.style.display = 'block';
+                rejectBtn.onclick = function() {
+                    closeSlipLightbox();
+                    openRejectOrderModal(orderId, orderNo, userText);
+                };
+            } else {
+                document.getElementById('lbApproveForm').style.display = 'none';
+                document.getElementById('lbRejectBtn').style.display = 'none';
+            }
+
+            document.getElementById('slipLightboxOverlay').style.display = 'flex';
+        }
+
+        function closeSlipLightbox() {
+            document.getElementById('slipLightboxOverlay').style.display = 'none';
+        }
+
+        // เปิด Modal ปฏิเสธ
+        function openRejectOrderModal(orderId, orderNo, userText) {
+            document.getElementById('rejectTargetOrderId').value = orderId;
+            document.getElementById('rejectModalInfo').innerHTML = 'เลขออเดอร์: <strong style="color:#ffcc00;">' + orderNo + '</strong> (' + userText + ')';
+            document.getElementById('rejectReasonField').value = '';
+            document.getElementById('rejectOrderModal').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('rejectReasonField').focus();
+            }, 100);
+        }
+
+        function closeRejectOrderModal() {
+            document.getElementById('rejectOrderModal').style.display = 'none';
+        }
+
+        function setRejectText(text) {
+            document.getElementById('rejectReasonField').value = text;
+        }
+
+        function openModalForCard(card) {
+            const amountInput = card.querySelector('.input-amount');
+            const noteInput = card.querySelector('.input-note');
+
+            const val = amountInput.value.trim();
+            if (!val || isNaN(val) || parseInt(val) < 0) {
+                amountInput.focus();
+                return;
+            }
+
+            const action = amountInput.getAttribute('data-action');
+            const ammoType = amountInput.getAttribute('data-ammo');
+            const amount = parseInt(val);
+            const note = (noteInput && noteInput.value.trim()) ? noteInput.value.trim() : '-';
+
+            pendingData = { action, ammoType, amount, note };
+
+            let actionLabel = '';
+            if (action === 'add_inventory') actionLabel = 'เพิ่มเข้าคลัง';
+            else if (action === 'sub_inventory') actionLabel = 'ลดออกจากคลัง';
+            else if (action === 'set_inventory') actionLabel = 'ปรับยอดคงเหลือเป็น';
+
+            let unit = ammoType.includes('เป้า') ? ' แผ่น' : ' นัด';
+
+            document.getElementById('modalActionText').innerText = actionLabel;
+            document.getElementById('modalAmmoText').innerText = ammoType;
+            document.getElementById('modalAmountText').innerText = amount + unit;
+            document.getElementById('modalNoteText').innerText = note;
+
+            const overlay = document.getElementById('confirmOverlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('btnConfirmSubmit').focus();
+            }, 50);
+        }
+
+        // ดักจับการกด Enter ทั้งในช่องจำนวน และช่องหมายเหตุ
+        document.querySelectorAll('.action-card').forEach(card => {
+            const inputs = card.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        openModalForCard(card);
+                    }
+                });
+            });
+        });
+
+        // เมื่อกดยืนยันใน Pop-up
+        document.getElementById('btnConfirmSubmit').addEventListener('click', function() {
+            if (pendingData) {
+                document.getElementById('hiddenAction').value = pendingData.action;
+                document.getElementById('hiddenAmmo').value = pendingData.ammoType;
+                document.getElementById('hiddenAmount').value = pendingData.amount;
+                document.getElementById('hiddenNote').value = pendingData.note;
+                document.getElementById('hiddenSubmitForm').submit();
+            }
+        });
+
+        function closeConfirmModal() {
+            document.getElementById('confirmOverlay').style.display = 'none';
+            pendingData = null;
+        }
+
+        // ปุ่มลัดสำหรับกล่อง Pop-up: Enter = ยืนยัน, Esc = ยกเลิก
+        document.addEventListener('keydown', function(e) {
+            const overlay = document.getElementById('confirmOverlay');
+            const lbOverlay = document.getElementById('slipLightboxOverlay');
+            const rejOverlay = document.getElementById('rejectOrderModal');
+
+            if (e.key === 'Escape') {
+                if (overlay && overlay.style.display === 'flex') closeConfirmModal();
+                if (lbOverlay && lbOverlay.style.display === 'flex') closeSlipLightbox();
+                if (rejOverlay && rejOverlay.style.display === 'flex') closeRejectOrderModal();
+            } else if (e.key === 'Enter') {
+                if (overlay && overlay.style.display === 'flex') {
+                    e.preventDefault();
+                    document.getElementById('btnConfirmSubmit').click();
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

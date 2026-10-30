@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KKU Shoot">
+    <meta name="theme-color" content="#080c14">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <title>ยืนยัน OTP - KKU SHOOTING CLUB</title>
+    <!-- Club Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='club_logo.png') }}">
+    <!-- Bootstrap 5, Icons & Kanit Font -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --bg-body: #080c14;
+            --bg-card: #0f172a;
+            --bg-input: #0b1120;
+            --border-card: #1e293b;
+            --border-input: #334155;
+            --primary-blue: #2563eb;
+            --primary-blue-hover: #1d4ed8;
+            --blue-glow: rgba(37, 99, 235, 0.25);
+            --primary-amber: #f59e0b;
+            --amber-glow: rgba(245, 158, 11, 0.25);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Kanit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 15px;
+            background-image: radial-gradient(circle at 50% 10%, rgba(37, 99, 235, 0.12) 0%, transparent 60%);
+        }
+
+        .minimal-container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .minimal-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(37, 99, 235, 0.08);
+            padding: 38px 32px;
+        }
+
+        .card-header-minimal {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .club-logo-img {
+            width: 68px;
+            height: 68px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            font-size: 0.92rem;
+            color: var(--text-sub);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .email-highlight {
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        /* Countdown Badge */
+        .timer-badge-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .timer-badge-text {
+            font-size: 0.88rem;
+            color: #fde68a;
+        }
+
+        .timer-countdown {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fbbf24;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        /* OTP Input */
+        .otp-input-field {
+            width: 100%;
+            height: 60px;
+            font-size: 1.9rem;
+            letter-spacing: 12px;
+            text-align: center;
+            background-color: var(--bg-input);
+            border: 2px solid #334155;
+            border-radius: 12px;
+            color: #fbbf24;
+            font-weight: 700;
+            font-family: monospace;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .otp-input-field:focus {
+            background-color: #0d1527;
+            border-color: var(--primary-amber);
+            box-shadow: 0 0 0 4px var(--amber-glow);
+        }
+
+        /* Section Heading */
+        .minimal-section-heading {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #38bdf8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+            margin-top: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .minimal-section-heading::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #1e293b;
+        }
+
+        /* Inputs */
+        .form-label-minimal {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .minimal-control {
+            background-color: var(--bg-input);
+            border: 1.5px solid var(--border-input);
+            border-radius: 9px;
+            color: #ffffff;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.95rem;
+            padding: 11px 14px;
+            transition: all 0.2s ease;
+        }
+
+        .minimal-control:focus {
+            background-color: #0d1527;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px var(--blue-glow);
+            color: #ffffff;
+            outline: none;
+        }
+
+        .btn-eye-toggle {
+            background: transparent;
+            border: 1.5px solid var(--border-input);
+            border-left: none;
+            color: #64748b;
+            border-top-right-radius: 9px !important;
+            border-bottom-right-radius: 9px !important;
+        }
+
+        .btn-eye-toggle:hover {
+            color: #38bdf8;
+            background: transparent;
+            border-color: var(--border-input);
+        }
+
+        /* Submit Button */
+        .btn-submit-minimal {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            padding: 13px;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .btn-submit-minimal:hover {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+        }
+
+        /* Resend Section */
+        .resend-box {
+            text-align: center;
+            margin-top: 18px;
+            padding-top: 14px;
+            font-size: 0.88rem;
+            color: var(--text-sub);
+        }
+
+        .btn-link-resend {
+            background: none;
+            border: none;
+            color: #fbbf24;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.88rem;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .btn-link-resend:hover {
+            color: #fde68a;
+        }
+
+        .btn-link-resend:disabled {
+            color: #64748b;
+            text-decoration: none;
+            cursor: not-allowed;
+        }
+
+        .card-footer-minimal {
+            text-align: center;
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid #1e293b;
+            font-size: 0.92rem;
+            color: var(--text-sub);
+        }
+
+        .link-clean {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .link-clean:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .minimal-alert {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .minimal-alert-info {
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            color: #7dd3fc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="minimal-container">
+        <div class="minimal-card">
+
+            <!-- Header -->
+            <div class="card-header-minimal">
+                <img src="{{ url_for('static', filename='club_logo.png') }}" alt="KKU Shooting Club" class="club-logo-img">
+                <h1 class="page-title">ยืนยันรหัส OTP</h1>
+                <p class="page-subtitle">
+                    ระบบได้ส่งรหัส OTP 6 หลักไปยังอีเมล<br>
+                    <span class="email-highlight">{{ masked_email }}</span> เรียบร้อยแล้ว
+                </p>
+            </div>
+
+            <!-- Timer Countdown Badge -->
+            <div class="timer-badge-box">
+                <div class="timer-badge-text">
+                    <i class="bi bi-stopwatch me-1 text-warning"></i> รหัส OTP มีอายุเหลืออีก:
+                </div>
+                <div class="timer-countdown" id="otpTimerDisplay">05:00</div>
+            </div>
+
+            <!-- Flash Error / Info Alert -->
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="minimal-alert {% if 'ส่งรหัส OTP' in messages[0] %}minimal-alert-info{% endif %}">
+                    <i class="bi bi-info-circle-fill fs-5 flex-shrink-0"></i>
+                    <div>{{ messages[0] }}</div>
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('verify_otp') }}" id="verifyOtpForm">
+
+                <!-- OTP Input -->
+                <div class="mb-3">
+                    <label class="form-label-minimal text-center d-block">
+                        กรอกรหัส OTP 6 หลัก <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" 
+                           name="otp" 
+                           id="otpInput" 
+                           class="otp-input-field" 
+                           maxlength="6" 
+                           pattern="[0-9]{6}" 
+                           placeholder="••••••" 
+                           required 
+                           autofocus 
+                           autocomplete="one-time-code"
+                           inputmode="numeric">
+                </div>
+
+                <!-- Section: New Password -->
+                <div class="minimal-section-heading">
+                    <i class="bi bi-key-fill"></i> กำหนดรหัสผ่านใหม่
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-minimal" for="newPassword">รหัสผ่านใหม่ <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="password" 
+                               name="new_password" 
+                               id="newPassword" 
+                               class="form-control minimal-control" 
+                               placeholder="กรอกรหัสผ่านใหม่" 
+                               required 
+                               autocomplete="new-password">
+                        <button class="btn btn-eye-toggle" type="button" onclick="togglePass('newPassword', 'eye1')">
+                            <i class="bi bi-eye" id="eye1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-minimal" for="confirmPassword">ยืนยันรหัสผ่านใหม่อีกครั้ง <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="password" 
+                               name="confirm_password" 
+                               id="confirmPassword" 
+                               class="form-control minimal-control" 
+                               placeholder="พิมพ์รหัสผ่านใหม่อีกครั้ง" 
+                               required 
+                               autocomplete="new-password">
+                        <button class="btn btn-eye-toggle" type="button" onclick="togglePass('confirmPassword', 'eye2')">
+                            <i class="bi bi-eye" id="eye2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit-minimal">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>บันทึกรหัสผ่านใหม่</span>
+                </button>
+            </form>
+
+            <!-- Resend OTP Button -->
+            <div class="resend-box">
+                <span>ยังไม่ได้รับรหัส OTP?</span>
+                <form method="POST" action="{{ url_for('resend_otp') }}" class="d-inline ms-1">
+                    <button type="submit" class="btn-link-resend" id="btnResendOtp">
+                        ส่งรหัส OTP ใหม่อีกครั้ง
+                    </button>
+                </form>
+                <div id="resendCountdownText" class="small text-secondary mt-1" style="display: none;">
+                    สามารถขอรหัสใหม่ได้ในอีก <span id="resendSec">30</span> วินาที
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="card-footer-minimal">
+                <a href="{{ url_for('login') }}" class="link-clean">
+                    <i class="bi bi-x-circle me-1"></i> ยกเลิกและกลับหน้าเข้าสู่ระบบ
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Script for Timer & Toggles -->
+    <script>
+        // Password Toggle
+        function togglePass(inputId, eyeId) {
+            const input = document.getElementById(inputId);
+            const eye = document.getElementById(eyeId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                eye.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                eye.className = 'bi bi-eye';
+            }
+        }
+
+        // Form Validation for Password Match
+        document.getElementById('verifyOtpForm').addEventListener('submit', function(e) {
+            const p1 = document.getElementById('newPassword').value;
+            const p2 = document.getElementById('confirmPassword').value;
+            if (p1 !== p2) {
+                e.preventDefault();
+                alert('รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง');
+            }
+        });
+
+        // 5 Minutes Countdown Timer
+        let totalSeconds = 300; // 5 minutes
+        const display = document.getElementById('otpTimerDisplay');
+
+        const timerInterval = setInterval(() => {
+            totalSeconds--;
+            if (totalSeconds <= 0) {
+                clearInterval(timerInterval);
+                display.textContent = '00:00 (หมดอายุ)';
+                display.style.color = '#ef4444';
+            } else {
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }, 1000);
+
+        // Auto numeric format for OTP input
+        const otpInput = document.getElementById('otpInput');
+        otpInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    </script>
+</body>
+</html>

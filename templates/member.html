@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KKU Shoot">
+    <meta name="theme-color" content="#080c14">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <title>KKU SHOOTING CLUB - ARMORY & SERVICE</title>
+    <!-- Club Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='club_logo.png') }}">
+    <!-- Fonts & Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            overflow: hidden;
+            user-select: none;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* ---------------- 1. NAVBAR ด้านบน (เรียบง่าย สไตล์ HUD) ---------------- */
+        .top-navbar {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 75px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.96) 0%, rgba(2, 6, 18, 0.4) 80%, rgba(0, 0, 0, 0) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 55px;
+            z-index: 1000;
+        }
+
+        .brand-text {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.3rem;
+            letter-spacing: 2px;
+            color: #ffffff;
+            text-shadow: 0 0 14px rgba(0, 150, 255, 0.7);
+        }
+
+        .nav-center-menu {
+            display: flex;
+            align-items: center;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            gap: 5px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #8da4c4;
+            font-size: 1.15rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            cursor: pointer;
+            position: relative;
+            padding: 12px 24px;
+            transition: color 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover { color: #ffffff; }
+
+        .nav-divider {
+            width: 1.5px;
+            height: 22px;
+            background: rgba(255, 255, 255, 0.15);
+            margin: 0 8px;
+        }
+
+        .cart-count-pill {
+            background: #e63946;
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 12px;
+            box-shadow: 0 0 8px rgba(230, 57, 70, 0.6);
+            letter-spacing: 0;
+        }
+
+        .user-tier-pill {
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(0, 0, 0, 0.65);
+            padding: 6px 20px;
+            border-radius: 4px;
+            font-size: 0.98rem;
+            color: #38bdf8;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-exit {
+            border: 1.5px solid #991b1b;
+            background: rgba(20, 5, 5, 0.6);
+            color: #ef4444;
+            font-size: 0.92rem;
+            font-weight: 600;
+            padding: 5px 16px;
+            text-decoration: none;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+        .btn-exit:hover {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+        }
+
+        /* ---------------- 2. VERTICAL SNAP CONTAINER ---------------- */
+        .viewport-slider {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        .viewport-slider::-webkit-scrollbar { display: none; }
+
+        .stage-screen {
+            width: 100vw;
+            height: 100vh;
+            scroll-snap-align: start;
+            position: relative;
+            display: flex;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #stageRifleAir { background-image: url("{{ url_for('static', filename='bg_rifle_air.png') }}"); }
+        #stagePistolAir { background-image: url("{{ url_for('static', filename='bg_pistol_air.png') }}"); }
+        #stageRifle22 { background-image: url("{{ url_for('static', filename='bg_rifle_22.png') }}"); }
+
+        /* ---------------- 3. ฝั่งซ้าย: พื้นหลังดำขุ่น ---------------- */
+        .panel-left-content {
+            width: 48vw;
+            height: 100vh;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.97) 0%, rgba(2, 4, 10, 0.92) 85%, rgba(0, 0, 0, 0) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 95px 4vw 40px 14vw; /* หลบวงแหวนซ้าย */
+            z-index: 10;
+        }
+
+        .gun-headline {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #ffffff;
+            line-height: 1.15;
+            margin-bottom: 6px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.25);
+        }
+
+        .gun-sub-caliber {
+            font-size: 1.25rem;
+            color: #9cb3d5;
+            margin-bottom: 22px;
+            font-weight: 400;
+        }
+
+        .ammo-tab-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .ammo-choice-btn {
+            background: rgba(10, 20, 35, 0.85);
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            color: #9cb3d5;
+            padding: 8px 22px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 4px;
+        }
+
+        .ammo-choice-btn:hover { border-color: #00e5ff; color: #ffffff; }
+        .ammo-choice-btn.active {
+            border-color: #00e5ff;
+            background: rgba(0, 229, 255, 0.18);
+            color: #ffffff;
+            box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+        }
+
+        .dot-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #64748b;
+        }
+        .ammo-choice-btn.active .dot-indicator {
+            background: #00e5ff;
+            box-shadow: 0 0 8px #00e5ff;
+        }
+
+        .package-mini-table {
+            width: 100%;
+            max-width: 650px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 30px;
+        }
+
+        .package-mini-table th {
+            color: #718096;
+            font-size: 0.95rem;
+            font-weight: 400;
+            padding-bottom: 12px;
+            border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .package-mini-table td {
+            padding: 16px 0;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+        }
+
+        .pkg-title { font-size: 1.25rem; font-weight: 500; color: #ffffff; }
+        .pkg-tagline { font-size: 0.88rem; color: #64748b; }
+        .pkg-price {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #facc15;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
+        }
+
+        .stepper-unit {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.65);
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .stepper-btn {
+            width: 32px;
+            height: 34px;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+        .stepper-btn:hover { background: rgba(255, 255, 255, 0.25); }
+
+        .stepper-val {
+            width: 42px;
+            height: 34px;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.15rem;
+            outline: none;
+        }
+
+        .btn-add-cart-action {
+            background: rgba(10, 18, 32, 0.88);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 600;
+            padding: 10px 42px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            align-self: flex-start;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+        .btn-add-cart-action:hover {
+            border-color: #00e5ff;
+            color: #00e5ff;
+            background: rgba(0, 229, 255, 0.15);
+            box-shadow: 0 0 22px rgba(0, 229, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* ---------------- 4. ฝั่งขวา: ปืน + กล่องกระสุน ---------------- */
+        .panel-right-desk {
+            width: 52vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .desk-composition {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gun-main-img {
+            max-width: 95%;
+            max-height: 75vh;
+            object-fit: contain;
+            transform: rotate(-12deg) translateY(20px);
+            filter: drop-shadow(0 35px 50px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 45px rgba(0, 150, 255, 0.45));
+            transition: transform 0.4s ease, filter 0.4s ease;
+            z-index: 2;
+        }
+
+        .gun-main-img:hover {
+            transform: rotate(-10deg) scale(1.03) translateY(10px);
+            filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.98)) drop-shadow(0 0 55px rgba(0, 229, 255, 0.65));
+        }
+
+        .pistol-scale {
+            max-width: 76% !important;
+            transform: rotate(-15deg) translateY(35px);
+        }
+
+        .ammo-box-display {
+            position: absolute;
+            bottom: 12%;
+            right: 10%;
+            width: 320px;
+            z-index: 3;
+            filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 25px rgba(0, 229, 255, 0.4));
+            pointer-events: none;
+            opacity: 0;
+            transform: translateX(80px) scale(0.9) rotate(15deg);
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .ammo-box-display.show {
+            opacity: 1;
+            transform: translateX(0) scale(1) rotate(6deg);
+            pointer-events: auto;
+        }
+
+        .ammo-box-display.slide-out {
+            opacity: 0;
+            transform: translateX(100px) scale(0.85) rotate(20deg);
+        }
+
+        .ammo-box-display img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        .ammo-box-display:hover img { transform: rotate(-2deg) scale(1.06); }
+
+        /* ---------------- 5. DRAWER ตะกร้า & ข้อมูล ---------------- */
+        .side-flyout {
+            position: fixed;
+            top: 75px; right: -520px; width: 490px; height: calc(100vh - 75px);
+            background: rgba(5, 7, 15, 0.97);
+            border-left: 1.5px solid rgba(255, 255, 255, 0.25);
+            box-shadow: -20px 0 45px rgba(0, 0, 0, 0.95);
+            z-index: 1050;
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(14px);
+        }
+        .side-flyout.active { right: 0; }
+
+        /* ---------------- 6. MODAL สแกนจ่ายเงิน ---------------- */
+        .pay-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 15, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 99998;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pay-modal-card {
+            width: 480px;
+            background: #020917;
+            border: 2px solid #00e5ff;
+            outline: 1px solid #1a3865;
+            outline-offset: -5px;
+            padding: 28px;
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.4);
+            animation: modalFade 0.2s ease-out;
+            border-radius: 6px;
+        }
+        @keyframes modalFade { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .qr-frame {
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 8px;
+            width: 240px;
+            margin: 0 auto 16px auto;
+            text-align: center;
+        }
+        .qr-frame img { width: 100%; height: auto; display: block; }
+
+        .file-upload-box {
+            border: 1.5px dashed #3b82f6;
+            background: rgba(10, 25, 55, 0.5);
+            padding: 14px;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        /* ---------------- 7. MODAL ใบเสร็จ ---------------- */
+        .receipt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .receipt-ticket {
+            width: 460px;
+            background: #020917;
+            border: 2px dashed #00e5ff;
+            padding: 28px 30px;
+            color: #e2e8f0;
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.4);
+            font-family: 'Kanit', monospace;
+            animation: ticketSlide 0.25s ease-out;
+            border-radius: 4px;
+        }
+        @keyframes ticketSlide { from { transform: translateY(-20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+
+        .receipt-header { text-align: center; }
+        .receipt-title { font-size: 1.7rem; font-weight: 700; letter-spacing: 2px; color: #fff; }
+        .receipt-sub { font-size: 0.9rem; color: #38bdf8; letter-spacing: 1px; }
+        .receipt-id { font-size: 0.8rem; color: #94a3b8; margin-top: 3px; }
+        .receipt-divider { text-align: center; color: #334155; margin: 10px 0; overflow: hidden; white-space: nowrap; }
+        .receipt-row { display: flex; justify-content: space-between; font-size: 1rem; margin-bottom: 5px; }
+        .receipt-item-line { display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; margin-bottom: 7px; }
+
+        .receipt-actions { display: flex; gap: 12px; }
+        .btn-receipt-print {
+            flex: 1; background: #0284c7; border: 1px solid #38bdf8; color: #fff;
+            padding: 8px; font-weight: 600; font-size: 1.05rem; cursor: pointer; transition: 0.2s; border-radius: 4px;
+        }
+        .btn-receipt-print:hover { background: #0369a1; }
+        .btn-receipt-close {
+            flex: 1; background: #1e293b; border: 1px solid #475569; color: #cbd5e1;
+            padding: 8px; font-weight: 600; font-size: 1.05rem; cursor: pointer; border-radius: 4px;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            .receipt-ticket, .receipt-ticket * { visibility: visible; }
+            .receipt-ticket { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; color: #000; background: #fff; }
+            .btn-receipt-print, .btn-receipt-close { display: none; }
+        }
+
+        /* ---------------- 8. ROTARY HUD MENU (วงแหวน 6 ช่อง ไอคอนใหญ่) ---------------- */
+        .revolver-menu-wrapper {
+            position: fixed;
+            top: 50%;
+            left: -250px; 
+            transform: translateY(-50%);
+            width: 500px;
+            height: 500px;
+            z-index: 900;
+            pointer-events: none;
+        }
+
+        .revolver-cylinder {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: transparent;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: auto; 
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+        }
+
+        .cylinder-inner-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 180px; height: 180px; 
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            background: #000; 
+            z-index: 2;
+        }
+
+        .sector-divider {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 500px; 
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+        .sector-divider.d1 { transform: translate(-50%, -50%) rotate(30deg); }
+        .sector-divider.d2 { transform: translate(-50%, -50%) rotate(90deg); }
+        .sector-divider.d3 { transform: translate(-50%, -50%) rotate(150deg); }
+
+        .chamber {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 140px; height: 140px; 
+            margin-top: -70px; margin-left: -70px; 
+            border-radius: 50%;
+            transform: rotate(calc(var(--angle) * 1deg)) translateX(170px);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .chamber-inner {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: rotate(calc(var(--angle) * -1deg - var(--current-rotation, 0deg)));
+            position: relative;
+        }
+
+        .chamber-inner img {
+            width: 90%; height: 90%; 
+            object-fit: contain;
+            opacity: 0.5; 
+            transition: all 0.3s;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+        }
+
+        .chamber:hover .chamber-inner img {
+            opacity: 0.9;
+            transform: scale(1.15);
+        }
+
+        .chamber.active .chamber-inner img {
+            opacity: 1;
+            transform: scale(1.35); 
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.95));
+        }
+
+        .aim-indicator {
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 15px #ffffff;
+            border: 2px solid #000;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. NAVBAR -->
+    <header class="top-navbar">
+        <div class="d-flex align-items-center gap-3">
+            <img src="{{ url_for('static', filename='club_logo.png') }}" alt="KKU Shooting Club" style="height: 48px; width: 48px; object-fit: contain;">
+            <div class="brand-text">KKU SHOOTING CLUB</div>
+        </div>
+
+        <nav class="nav-center-menu">
+            <button class="nav-btn active" onclick="scrollToGun(0)">
+                <i class="bi bi-crosshair"></i> หน้าซื้อกระสุน
+            </button>
+            <div class="nav-divider"></div>
+            <button class="nav-btn" onclick="toggleDrawer('cartDrawer')">
+                <i class="bi bi-cart3"></i> ตะกร้าของฉัน <span class="cart-count-pill" id="cartBadge">0</span>
+            </button>
+            <div class="nav-divider"></div>
+            <button class="nav-btn" onclick="toggleDrawer('ordersDrawer')">
+                <i class="bi bi-receipt"></i> คำสั่งซื้อ & สลิป
+                {% if pending_orders_count and pending_orders_count > 0 %}
+                <span class="badge rounded-pill bg-warning text-dark ms-1" style="font-size: 0.75rem;">
+                    รออนุมัติ {{ pending_orders_count }}
+                </span>
+                {% endif %}
+            </button>
+            <div class="nav-divider"></div>
+            <button class="nav-btn" onclick="toggleDrawer('profileDrawer')" title="เปิดโปรไฟล์และกระเป๋ากระสุน">
+                <i class="bi bi-person-circle"></i> โปรไฟล์ & กระเป๋า
+            </button>
+            <div class="nav-divider"></div>
+            <a href="{{ url_for('member_card') }}" class="nav-btn" style="text-decoration: none; color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);" title="เปิดดูบัตรสมาชิกดิจิทัลและ QR Code ประจำตัว">
+                <i class="bi bi-qr-code-scan"></i> บัตรสมาชิกดิจิทัล
+            </a>
+        </nav>
+
+        <div class="d-flex align-items-center gap-3">
+            <span class="user-tier-pill">TIER: นักศึกษา มข. (สมาชิก)</span>
+            
+            <!-- รูปโปรไฟล์ผู้ใช้งาน (กดเพื่อเปิดโปรไฟล์) -->
+            <div class="user-profile-nav" style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid #00e5ff; box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); cursor: pointer;" onclick="toggleDrawer('profileDrawer')" title="คลิกเพื่อเปิดโปรไฟล์และกระเป๋ากระสุน">
+                <img src="{{ url_for('static', filename='profiles/' + (user_info.profile_pic if user_info and user_info.profile_pic else session.get('profile_pic', 'default_avatar.png'))) }}" 
+                     alt="Profile" style="width: 100%; height: 100%; object-fit: cover;"
+                     onerror="this.onerror=null; this.src='/static/profiles/default_avatar.png';">
+            </div>
+
+            <a href="/logout" class="btn-exit">LOGOUT</a>
+        </div>
+    </header>
+
+    <!-- 2. เมนูวงแหวนชิดซ้าย (Rotary HUD) -->
+    <div class="revolver-menu-wrapper">
+        <div class="revolver-cylinder" id="revolverMenu" style="--current-rotation: 0deg;">
+            <div class="cylinder-inner-ring"></div>
+            
+            <div class="sector-divider d1"></div>
+            <div class="sector-divider d2"></div>
+            <div class="sector-divider d3"></div>
+            
+            <!-- เซ็ตที่ 1 (ครึ่งวงกลมซีกขวา) -->
+            <div class="chamber active" data-gun="0" data-angle="0" style="--angle: 0;" onclick="scrollToGun(0)" title="ปืนยาวอัดลม .177">
+                <div class="chamber-inner"><img src="{{ url_for('static', filename='lr_icon.png') }}"></div>
+            </div>
+            <div class="chamber" data-gun="1" data-angle="60" style="--angle: 60;" onclick="scrollToGun(1)" title="ปืนสั้นอัดลม .177">
+                <div class="chamber-inner"><img src="{{ url_for('static', filename='pistol_icon.png') }}"></div>
+            </div>
+            <div class="chamber" data-gun="2" data-angle="120" style="--angle: 120;" onclick="scrollToGun(2)" title="ปืนยาวชาวบ้าน .22">
+                <div class="chamber-inner"><img src="{{ url_for('static', filename='rifle_icon.png') }}"></div>
+            </div>
+
+            <!-- เซ็ตที่ 2 (ครึ่งวงกลมซีกซ้าย) -->
+            <div class="chamber" data-gun="0" data-angle="180" style="--angle: 180;" onclick="scrollToGun(0)" title="ปืนยาวอัดลม .177">
+                <div class="chamber-inner"><img src="{{ url_for('static', filename='lr_icon.png') }}"></div>
+            </div>
+            <div class="chamber" data-gun="1" data-angle="240" style="--angle: 240;" onclick="scrollToGun(1)" title="ปืนสั้นอัดลม .177">
+                <div class="chamber-inner"><img src="{{ url_for('static', filename='pistol_icon.png') }}"></div>
+            </div>
+            <div class="chamber" data-gun="2" data-angle="300" style="--angle: 300;" onclick="scrollToGun(2)" title="ปืนยาวชาวบ้าน .22">
+                <div class="chamber-inner"><img src="{{ url_for('static', filename='rifle_icon.png') }}"></div>
+            </div>
+        </div>
+        <div class="aim-indicator"></div>
+    </div>
+
+    <!-- 3. ผังเลื่อนแนวตั้ง 3 ปืน -->
+    <main class="viewport-slider" id="gunSlider">
+
+        <!-- ================= ปืนที่ 1: ปืนยาวอัดลมมาตรฐาน .177 ================= -->
+        <section class="stage-screen" id="stageRifleAir">
+            <div class="panel-left-content">
+                <h1 class="gun-headline">ปืนยาวอัดลมมาตรฐาน</h1>
+                <div class="gun-sub-caliber">ขนาดกระสุน .177 (ตัดสต็อกคลังกลาง .177)</div>
+
+                <table class="package-mini-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">แพ็กเกจ (กระสุน + เป้า)</th>
+                            <th style="width: 25%;">ราคา</th>
+                            <th style="width: 25%; text-align: right;">จำนวนแพ็ก</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="pkg-title">10 นัด + เป้าปืนยาว 1 แผ่น</div>
+                                <div class="pkg-tagline">ราคาสมาชิกชมรม</div>
+                            </td>
+                            <td><span class="pkg-price">45</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_r10', -1)">-</button>
+                                    <input type="text" id="qty_r10" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_r10', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pkg-title">20 นัด + เป้าปืนยาว 2 แผ่น</div>
+                                <div class="pkg-tagline">ราคาสมาชิกชมรม</div>
+                            </td>
+                            <td><span class="pkg-price">65</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_r20', -1)">-</button>
+                                    <input type="text" id="qty_r20" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_r20', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pkg-title">50 นัด + เป้าปืนยาว 5 แผ่น</div>
+                                <div class="pkg-tagline">ราคาสมาชิกชมรม</div>
+                            </td>
+                            <td><span class="pkg-price">125</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_r50', -1)">-</button>
+                                    <input type="text" id="qty_r50" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_r50', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button class="btn-add-cart-action" onclick="collectGunPackages('.177', [
+                    { name: 'ปืนยาวอัดลม 10 นัด', id: 'qty_r10', price: 45, bullets: 10, targets: 1, targetType: 'เป้าปืนยาว' },
+                    { name: 'ปืนยาวอัดลม 20 นัด', id: 'qty_r20', price: 65, bullets: 20, targets: 2, targetType: 'เป้าปืนยาว' },
+                    { name: 'ปืนยาวอัดลม 50 นัด', id: 'qty_r50', price: 125, bullets: 50, targets: 5, targetType: 'เป้าปืนยาว' }
+                ])">
+                    เพิ่มลงตะกร้า
+                </button>
+            </div>
+            <div class="panel-right-desk">
+                <div class="desk-composition">
+                    <img src="{{ url_for('static', filename='air_rifle.png') }}" class="gun-main-img">
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ปืนที่ 2: ปืนสั้นอัดลมมาตรฐาน .177 ================= -->
+        <section class="stage-screen" id="stagePistolAir">
+            <div class="panel-left-content">
+                <h1 class="gun-headline">ปืนสั้นอัดลมมาตรฐาน</h1>
+                <div class="gun-sub-caliber">ขนาดกระสุน .177 (รวมค่าเติมลมถัง PCP)</div>
+
+                <table class="package-mini-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">แพ็กเกจ (กระสุน + ลม)</th>
+                            <th style="width: 25%;">ราคา</th>
+                            <th style="width: 25%; text-align: right;">จำนวนแพ็ก</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="pkg-title">10 นัด + เป้าปืนสั้น 1 แผ่น</div>
+                                <div class="pkg-tagline">ราคาสมาชิกชมรม (รวมเติมลม)</div>
+                            </td>
+                            <td><span class="pkg-price">60</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_p10', -1)">-</button>
+                                    <input type="text" id="qty_p10" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_p10', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pkg-title">20 นัด + เป้าปืนสั้น 2 แผ่น</div>
+                                <div class="pkg-tagline">ราคาสมาชิกชมรม (รวมเติมลม)</div>
+                            </td>
+                            <td><span class="pkg-price">80</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_p20', -1)">-</button>
+                                    <input type="text" id="qty_p20" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_p20', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pkg-title">50 นัด + เป้าปืนสั้น 5 แผ่น</div>
+                                <div class="pkg-tagline">ราคาสมาชิกชมรม (รวมเติมลม)</div>
+                            </td>
+                            <td><span class="pkg-price">130</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_p50', -1)">-</button>
+                                    <input type="text" id="qty_p50" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_p50', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button class="btn-add-cart-action" onclick="collectGunPackages('.177', [
+                    { name: 'ปืนสั้นอัดลม 10 นัด', id: 'qty_p10', price: 60, bullets: 10, targets: 1, targetType: 'เป้าปืนสั้น' },
+                    { name: 'ปืนสั้นอัดลม 20 นัด', id: 'qty_p20', price: 80, bullets: 20, targets: 2, targetType: 'เป้าปืนสั้น' },
+                    { name: 'ปืนสั้นอัดลม 50 นัด', id: 'qty_p50', price: 130, bullets: 50, targets: 5, targetType: 'เป้าปืนสั้น' }
+                ])">
+                    เพิ่มลงตะกร้า
+                </button>
+            </div>
+            <div class="panel-right-desk">
+                <div class="desk-composition">
+                    <img src="{{ url_for('static', filename='air_pistol.png') }}" class="gun-main-img pistol-scale">
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ปืนที่ 3: ปืนยาวชาวบ้าน .22 LR ================= -->
+        <section class="stage-screen" id="stageRifle22">
+            <div class="panel-left-content">
+                <h1 class="gun-headline">ปืนยาวชาวบ้าน .22 LR</h1>
+                <div class="gun-sub-caliber">เลือกเกรดกระสุนที่ต้องการใช้ยิง:</div>
+
+                <div class="ammo-tab-bar">
+                    <button type="button" class="ammo-choice-btn active" id="tabBtnCCI" onclick="select22Grade('CCI')">
+                        <span class="dot-indicator"></span> .22 LR (CCI เกรดซ้อม)
+                    </button>
+                    <button type="button" class="ammo-choice-btn" id="tabBtnRWS" onclick="select22Grade('RWS')">
+                        <span class="dot-indicator"></span> .22 LR (RWS เกรดแข่ง)
+                    </button>
+                </div>
+
+                <!-- ตาราง CCI -->
+                <table class="package-mini-table" id="table22CCI">
+                    <thead>
+                        <tr><th style="width: 50%;">แพ็กเกจ (.22 CCI)</th><th style="width: 25%;">ราคา</th><th style="width: 25%; text-align: right;">จำนวนแพ็ก</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="pkg-title">5 นัด + เป้าปืนยาว 1 แผ่น</div><div class="pkg-tagline">ราคาสมาชิก (CCI)</div></td>
+                            <td><span class="pkg-price">95</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_cci5', -1)">-</button>
+                                    <input type="text" id="qty_cci5" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_cci5', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><div class="pkg-title">10 นัด + เป้าปืนยาว 1 แผ่น</div><div class="pkg-tagline">ราคาสมาชิก (CCI)</div></td>
+                            <td><span class="pkg-price">150</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_cci10', -1)">-</button>
+                                    <input type="text" id="qty_cci10" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_cci10', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><div class="pkg-title">20 นัด + เป้าปืนยาว 2 แผ่น</div><div class="pkg-tagline">ราคาสมาชิก (CCI)</div></td>
+                            <td><span class="pkg-price">250</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_cci20', -1)">-</button>
+                                    <input type="text" id="qty_cci20" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_cci20', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><div class="pkg-title">50 นัด + เป้าปืนยาว 5 แผ่น</div><div class="pkg-tagline">ราคาสมาชิก (CCI ยกกล่อง)</div></td>
+                            <td><span class="pkg-price">570</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_cci50', -1)">-</button>
+                                    <input type="text" id="qty_cci50" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_cci50', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- ตาราง RWS -->
+                <table class="package-mini-table" id="table22RWS" style="display: none;">
+                    <thead>
+                        <tr><th style="width: 50%;">แพ็กเกจ (.22 RWS)</th><th style="width: 25%;">ราคา</th><th style="width: 25%; text-align: right;">จำนวนแพ็ก</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="pkg-title">5 นัด + เป้าปืนยาว 1 แผ่น</div><div class="pkg-tagline">ราคาสมาชิก (RWS)</div></td>
+                            <td><span class="pkg-price">95</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_rws5', -1)">-</button>
+                                    <input type="text" id="qty_rws5" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_rws5', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><div class="pkg-title">10 นัด + เป้าปืนยาว 1 แผ่น</div><div class="pkg-tagline">ราคาสมาชิก (RWS)</div></td>
+                            <td><span class="pkg-price">150</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_rws10', -1)">-</button>
+                                    <input type="text" id="qty_rws10" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_rws10', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><div class="pkg-title">20 นัด + เป้าปืนยาว 2 แผ่น</div><div class="pkg-tagline">ราคาสมาชิก (RWS)</div></td>
+                            <td><span class="pkg-price">250</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_rws20', -1)">-</button>
+                                    <input type="text" id="qty_rws20" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_rws20', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><div class="pkg-title">50 นัด + เป้าปืนยาว 5 แผ่น</div><div class="pkg-tagline">ราคาสมาชิก (RWS ยกกล่อง)</div></td>
+                            <td><span class="pkg-price">570</span> <span class="small text-secondary">฿</span></td>
+                            <td style="text-align: right;">
+                                <div class="stepper-unit">
+                                    <button class="stepper-btn" onclick="tweakStep('qty_rws50', -1)">-</button>
+                                    <input type="text" id="qty_rws50" class="stepper-val" value="0" readonly>
+                                    <button class="stepper-btn" onclick="tweakStep('qty_rws50', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button class="btn-add-cart-action" onclick="add22PackageToCart()">
+                    เพิ่มลงตะกร้า
+                </button>
+            </div>
+
+            <div class="panel-right-desk">
+                <div class="desk-composition">
+                    <img src="{{ url_for('static', filename='rifle_22.png') }}" class="gun-main-img">
+                    <div class="ammo-box-display show" id="ammoBoxCCI">
+                        <img src="{{ url_for('static', filename='ammo_box_cci.png') }}" onerror="this.src='https://placehold.co/240x180/000030/ffffff?text=CCI+BOX.PNG';">
+                    </div>
+                    <div class="ammo-box-display" id="ammoBoxRWS">
+                        <img src="{{ url_for('static', filename='ammo_box_rws.png') }}" onerror="this.src='https://placehold.co/240x180/000030/ffffff?text=RWS+BOX.PNG';">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 4. ลิ้นชัก: ตะกร้าของฉัน -->
+    <aside class="side-flyout" id="cartDrawer">
+        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary mb-3">
+            <h4 class="m-0 text-white" style="font-family: 'Teko'; letter-spacing: 2px;">ตะกร้าของฉัน</h4>
+            <button class="btn-close btn-close-white" onclick="toggleDrawer('cartDrawer')"></button>
+        </div>
+        <div class="flex-grow-1 overflow-auto" id="cartBucket"></div>
+        <div class="pt-3 border-top border-secondary">
+            <div class="d-flex justify-content-between fs-5 mb-3">
+                <span class="text-secondary">ยอดรวมสุทธิ:</span>
+                <span class="text-warning fw-bold fs-4" id="cartTotalSum">0 ฿</span>
+            </div>
+            <button type="button" class="btn btn-outline-info w-100 py-2 fs-5" style="font-family: 'Teko'; letter-spacing: 2px;" onclick="openPaymentModal()">
+                PROCEED TO PAYMENT (ชำระเงิน)
+            </button>
+        </div>
+    </aside>
+
+    <!-- ================= MODAL สแกนจ่าย PROMPTPAY ================= -->
+    <div id="paymentModalOverlay" class="pay-modal-overlay">
+        <div class="pay-modal-card">
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary">
+                <span class="fw-bold fs-5 text-info" style="font-family: 'Teko'; letter-spacing: 2px;">PROMPTPAY PAYMENT GATEWAY</span>
+                <button type="button" class="btn-close btn-close-white" onclick="closePaymentModal()"></button>
+            </div>
+            <div class="text-center my-2">
+                <div class="small text-secondary mb-1">สแกนชำระเงินผ่าน QR พร้อมเพย์ ชมรมยิงปืน มข.</div>
+                <div class="qr-frame">
+                    <img src="{{ url_for('static', filename='qr_promptpay.png') }}" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=KKU_SHOOTING_CLUB';" alt="PromptPay QR Code">
+                </div>
+                <div class="fs-4 fw-bold text-warning mb-2" id="payModalTotalText">0 บาท</div>
+                <div class="small text-muted mb-3">ชื่อบัญชี: ชมรมยิงปืน มหาวิทยาลัยขอนแก่น</div>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" id="checkoutWithSlipForm">
+                <input type="hidden" name="action" value="buy_cart">
+                <input type="hidden" name="cart_payload" id="cartPayloadField">
+                
+                <div class="file-upload-box mb-3" onclick="document.getElementById('slipFileInput').click()">
+                    <i class="bi bi-cloud-arrow-up fs-3 text-info"></i>
+                    <div class="small text-white" id="uploadStatusText">คลิกเพื่อแนบรูปสลิปหลักฐานโอนเงิน</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">รองรับไฟล์รูปภาพ .png, .jpg, .jpeg</div>
+                    <img id="slipPreviewImg" style="display:none; max-width: 140px; max-height: 140px; margin: 8px auto 0 auto; border: 2px solid #00e5ff; border-radius: 4px; object-fit: contain;">
+                    <input type="file" name="slip_image" id="slipFileInput" accept="image/*" style="display: none;" onchange="handleFileSelected(this)">
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary w-50" onclick="closePaymentModal()">ยกเลิก</button>
+                    <button type="button" class="btn btn-success w-50 fw-bold" onclick="submitFinalCheckout()">ยืนยันการชำระเงิน</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL ใบเสร็จ (RECEIPT) ================= -->
+    <div id="receiptModalOverlay" class="receipt-overlay" {% if receipt_data %}style="display: flex;"{% else %}style="display: none;"{% endif %}>
+        <div class="receipt-ticket">
+            <div class="receipt-header">
+                <div class="receipt-title">KKU SHOOTING CLUB</div>
+                <div class="receipt-sub">AMMUNITION REQUISITION RECEIPT</div>
+                <div class="receipt-id">NO: {{ receipt_data.order_id if receipt_data else '-' }}</div>
+            </div>
+
+            <div class="receipt-divider">-----------------------------------------</div>
+
+            <div class="receipt-row">
+                <span>OPERATOR:</span>
+                <span>{{ session.get('username') }}</span>
+            </div>
+            <div class="receipt-row">
+                <span>DATE/TIME:</span>
+                <span>{{ receipt_data.timestamp if receipt_data else '-' }}</span>
+            </div>
+            <div class="receipt-row">
+                <span>STATUS:</span>
+                {% if receipt_data and receipt_data.status == 'pending' %}
+                    <span class="text-warning fw-bold">🟡 รอกรรมการอนุมัติสลิป (PENDING)</span>
+                {% else %}
+                    <span class="text-success fw-bold">PAID & DISPATCHED</span>
+                {% endif %}
+            </div>
+
+            {% if receipt_data and receipt_data.status == 'pending' %}
+            <div class="p-2 mt-2 rounded text-center" style="background: rgba(255, 193, 7, 0.15); border: 1px solid rgba(255, 193, 7, 0.4); font-size: 0.85rem; color: #ffe066;">
+                <i class="bi bi-hourglass-split me-1"></i> คำสั่งซื้อและสลิปถูกส่งแล้ว<br>
+                เมื่อกรรมการชมรมตรวจสอบและอนุมัติ ของจะเข้ากระเป๋าทันที
+            </div>
+            {% endif %}
+
+            <div class="receipt-divider">-----------------------------------------</div>
+
+            <div class="receipt-items-list">
+                {% if receipt_data %}
+                    {% for it in receipt_data.cart_items %}
+                    <div class="receipt-item-line">
+                        <div>
+                            <div>{{ it.name }} (x{{ it.qty }})</div>
+                            <small class="text-secondary">+กระสุน {{ it.bullets }} นัด | เป้า {{ it.targets }} แผ่น</small>
+                        </div>
+                        <div class="fw-bold">{{ it.price }} ฿</div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="receipt-divider">-----------------------------------------</div>
+
+            <div class="receipt-row fs-6">
+                <span>รวมที่ได้รับ:</span>
+                <span class="fw-bold text-info">กระสุน {{ receipt_data.total_bullets if receipt_data else 0 }} นัด | เป้า {{ receipt_data.total_targets if receipt_data else 0 }} แผ่น</span>
+            </div>
+            <div class="receipt-row fs-5 text-warning fw-bold mt-1">
+                <span>ยอดชำระสุทธิ:</span>
+                <span>{{ receipt_data.total_price if receipt_data else 0 }} ฿</span>
+            </div>
+
+            <div class="receipt-actions mt-3">
+                <button type="button" class="btn-receipt-print" onclick="window.print()">พิมพ์ใบเสร็จ</button>
+                <button type="button" class="btn-receipt-close" onclick="closeReceiptModal()">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. ลิ้นชัก: คำสั่งซื้อ & สลิปของฉัน -->
+    <aside class="side-flyout" id="ordersDrawer">
+        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary mb-3">
+            <h4 class="m-0 text-white" style="font-family: 'Teko'; letter-spacing: 2px;">
+                <i class="bi bi-receipt me-1"></i> คำสั่งซื้อ & สถานะสลิป
+            </h4>
+            <button class="btn-close btn-close-white" onclick="toggleDrawer('ordersDrawer')"></button>
+        </div>
+        <div class="flex-grow-1 overflow-auto pe-1">
+            {% for ord in my_orders %}
+            <div class="bg-dark p-3 rounded mb-3 border {% if ord.status == 'pending' %}border-warning{% elif ord.status == 'approved' %}border-success{% else %}border-danger{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary">
+                    <span class="fw-bold text-white" style="font-family: 'Teko'; font-size: 1.25rem; letter-spacing: 1px;">
+                        {{ ord.order_no }}
+                    </span>
+                    {% if ord.status == 'pending' %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> รอตรวจสอบ</span>
+                    {% elif ord.status == 'approved' %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> อนุมัติแล้ว</span>
+                    {% else %}
+                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> ปฏิเสธ</span>
+                    {% endif %}
+                </div>
+
+                <div class="small text-light mb-1">{{ ord.items_summary }}</div>
+                
+                <div class="d-flex justify-content-between align-items-center small text-secondary my-1">
+                    <span>กระสุน {{ ord.total_bullets }} นัด | เป้า {{ ord.total_targets }} แผ่น</span>
+                    <span class="text-warning fw-bold fs-6">{{ ord.total_price }} ฿</span>
+                </div>
+
+                <div class="small text-muted mt-2 pt-2 border-top border-secondary d-flex justify-content-between align-items-center">
+                    <span>{{ ord.created_at }}</span>
+                    {% if ord.slip_image %}
+                    <a href="{{ url_for('static', filename='slips/' + ord.slip_image) }}" target="_blank" class="text-info text-decoration-none small">
+                        <i class="bi bi-image"></i> ดูสลิปที่แนบ
+                    </a>
+                    {% else %}
+                    <span class="text-muted small">ไม่ได้แนบสลิป</span>
+                    {% endif %}
+                </div>
+
+                {% if ord.status == 'approved' and ord.reviewed_by %}
+                <div class="small text-success mt-2" style="font-size: 0.8rem;">
+                    ✓ อนุมัติโดย {{ ord.reviewed_by }} (โอนของเข้ากระเป๋าแล้ว)
+                </div>
+                {% elif ord.status == 'rejected' %}
+                <div class="small text-danger mt-2 p-2 rounded" style="background: rgba(220, 53, 69, 0.15); font-size: 0.8rem;">
+                    <strong>เหตุผลที่ปฏิเสธ:</strong> {{ ord.reject_reason or 'สลิปไม่ถูกต้อง' }}
+                </div>
+                {% elif ord.status == 'pending' %}
+                <div class="small text-warning mt-2" style="font-size: 0.8rem;">
+                    ⏳ กรรมการกำลังตรวจสอบสลิป เมื่ออนุมัติแล้วของจะเข้ากระเป๋าทันที
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-bag-x fs-1 d-block mb-2 text-secondary"></i>
+                ยังไม่มีประวัติคำสั่งซื้อ
+            </div>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <!-- 6. ลิ้นชัก: ข้อมูลของฉัน (กระเป๋า / เบิก / คืนกระสุน) -->
+    <aside class="side-flyout" id="profileDrawer">
+        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary mb-3">
+            <h4 class="m-0 text-white" style="font-family: 'Teko'; letter-spacing: 2px;">กระเป๋า & ประวัติ</h4>
+            <button class="btn-close btn-close-white" onclick="toggleDrawer('profileDrawer')"></button>
+        </div>
+        <div class="flex-grow-1 overflow-auto">
+            
+            {% if pending_orders_count and pending_orders_count > 0 %}
+            <div class="alert alert-warning py-2 px-3 small d-flex justify-content-between align-items-center mb-3">
+                <span><i class="bi bi-clock-history me-1"></i> มีคำสั่งซื้อรออนุมัติสลิป {{ pending_orders_count }} รายการ</span>
+                <button type="button" class="btn btn-sm btn-dark" onclick="toggleDrawer('ordersDrawer')">ดูสถานะ</button>
+            </div>
+            {% endif %}
+
+            <!-- Member Profile Header & Avatar Crop -->
+            <div class="d-flex align-items-center gap-3 p-3 rounded mb-3 bg-dark border border-secondary shadow-sm">
+                <div class="position-relative" style="cursor: pointer;" onclick="document.getElementById('drawerAvatarInput').click();" title="แตะเพื่อเปลี่ยนรูปโปรไฟล์และครอบตัด">
+                    <img id="drawerAvatarImg" src="{{ url_for('static', filename='profiles/' + (user_info.profile_pic if user_info and user_info.profile_pic else session.get('profile_pic', 'default_avatar.png'))) }}" 
+                         alt="Avatar" class="rounded-circle border border-info" style="width: 58px; height: 58px; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='/static/profiles/default_avatar.png';">
+                    <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning text-dark p-1" style="font-size: 0.65rem;" title="เปลี่ยนรูป">
+                        <i class="bi bi-camera-fill"></i>
+                    </span>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold text-white" style="font-size: 0.95rem;">
+                        {{ user_info.prefix if user_info and user_info.prefix else '' }}{{ user_info.first_name if user_info and user_info.first_name else session.get('username') }} {{ user_info.last_name if user_info and user_info.last_name else '' }}
+                    </div>
+                    <div class="text-secondary small" style="font-size: 0.76rem;">
+                        {{ user_info.student_id if user_info and user_info.student_id else '' }} • {{ user_info.faculty if user_info and user_info.faculty else 'มหาวิทยาลัยขอนแก่น' }}
+                    </div>
+                    <button type="button" class="btn btn-link text-info p-0 small text-decoration-none mt-1" style="font-size: 0.74rem;" onclick="document.getElementById('drawerAvatarInput').click();">
+                        <i class="bi bi-crop me-1"></i>เปลี่ยนรูปโปรไฟล์ (ครอบตัด)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hidden Form for updating avatar -->
+            <form method="POST" enctype="multipart/form-data" id="updateAvatarForm" style="display: none;">
+                <input type="hidden" name="action" value="update_profile_pic">
+                <input type="file" name="profile_image" id="drawerAvatarInput" accept="image/*" onchange="handleDrawerAvatarChange(this);">
+            </form>
+
+            <!-- Digital Member Card Link Banner -->
+            <div class="p-3 rounded mb-3" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%); border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-qr-code-scan text-warning fs-3"></i>
+                        <div>
+                            <div class="fw-bold text-white" style="font-size: 0.95rem;">บัตรสมาชิกดิจิทัล (Digital Card)</div>
+                            <div class="text-secondary" style="font-size: 0.76rem;">QR Code ประจำตัวสำหรับเบิกกระสุนหน้าช่องยิง</div>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ url_for('member_card') }}" class="btn btn-sm btn-warning w-100 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm text-dark">
+                    <i class="bi bi-person-vcard-fill"></i> เปิดบัตรสมาชิกเพื่อสแกน
+                </a>
+            </div>
+
+            <h6 class="text-primary mt-2">กระสุนและเป้าในกระเป๋าของคุณ</h6>
+            <div class="bg-dark p-3 rounded mb-3 border border-secondary">
+                {% for item in my_ammo %}
+                <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
+                    <span>{{ item['ammo_type'] }}</span>
+                    <span class="badge bg-primary fs-6">{{ item['quantity'] }} {% if 'เป้า' in item['ammo_type'] %}แผ่น{% else %}นัด{% endif %}</span>
+                </div>
+                {% else %}
+                <div class="text-muted text-center py-2">ยังไม่มีของในกระเป๋า</div>
+                {% endfor %}
+            </div>
+
+            <h6 class="text-warning mt-3">เบิกใช้งานลงสนามยิง</h6>
+            <form method="POST" class="bg-dark p-3 rounded border border-warning">
+                <input type="hidden" name="action" value="withdraw">
+                <div class="mb-2">
+                    <label class="small text-secondary">ชนิดของที่จะเบิก</label>
+                    <select name="ammo_type" class="form-select form-select-sm bg-black text-white border-secondary">
+                        {% for item in my_ammo %}
+                        <option value="{{ item['ammo_type'] }}">{{ item['ammo_type'] }} (มี {{ item['quantity'] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="small text-secondary">จำนวนที่เบิก</label>
+                    <input type="number" name="amount" class="form-control form-control-sm bg-black text-white border-secondary" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-warning w-100 btn-sm fw-bold">ยืนยันเบิกใช้งาน</button>
+            </form>
+
+            <h6 class="text-success mt-4">คืนเข้ากระเป๋า (ใช้ไม่หมด)</h6>
+            <form method="POST" class="bg-dark p-3 rounded border border-success">
+                <input type="hidden" name="action" value="return_ammo">
+                <div class="mb-2">
+                    <label class="small text-secondary">ชนิดของที่จะคืน</label>
+                    <select name="ammo_type" class="form-select form-select-sm bg-black text-white border-secondary">
+                        {% for item in my_ammo %}
+                        <option value="{{ item['ammo_type'] }}">{{ item['ammo_type'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="small text-secondary">จำนวนที่คืน</label>
+                    <input type="number" name="amount" class="form-control form-control-sm bg-black text-white border-secondary" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100 btn-sm fw-bold">ยืนยันคืนเข้ากระเป๋า</button>
+            </form>
+
+            <h6 class="text-info mt-4">ประวัติการเบิก / คืน</h6>
+            <div class="bg-dark p-2 rounded border border-secondary" style="max-height: 200px; overflow-y: auto;">
+                {% for log in history %}
+                <div class="py-1 border-bottom border-secondary small d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="{% if log.action == 'Withdraw' %}text-warning{% elif log.action == 'Return' %}text-info{% else %}text-success{% endif %} fw-bold">
+                            {% if log.action == 'Withdraw' %}เบิก{% elif log.action == 'Return' %}คืน{% else %}ซื้อ{% endif %}
+                        </span>
+                        <span>{{ log.ammo_type }}</span>
+                        <span class="text-secondary">({{ log.amount }})</span>
+                    </div>
+                    <span class="text-muted" style="font-size: 0.75rem;">{{ log.timestamp }}</span>
+                </div>
+                {% else %}
+                <div class="text-muted text-center py-2 small">ยังไม่มีประวัติการเบิกคืน</div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </aside>
+
+    <script>
+        // ---------------- 1. สลับเกรดกระสุน .22 ----------------
+        let current22Grade = 'CCI';
+        function select22Grade(grade) {
+            if (current22Grade === grade) return;
+            current22Grade = grade;
+
+            const tabCCI = document.getElementById('tabBtnCCI');
+            const tabRWS = document.getElementById('tabBtnRWS');
+            const tableCCI = document.getElementById('table22CCI');
+            const tableRWS = document.getElementById('table22RWS');
+            const boxCCI = document.getElementById('ammoBoxCCI');
+            const boxRWS = document.getElementById('ammoBoxRWS');
+
+            const currentBox = (grade === 'CCI') ? boxRWS : boxCCI;
+            const targetBox = (grade === 'CCI') ? boxCCI : boxRWS;
+
+            if (grade === 'CCI') {
+                tabCCI.classList.add('active'); tabRWS.classList.remove('active');
+                tableCCI.style.display = 'table'; tableRWS.style.display = 'none';
+            } else {
+                tabRWS.classList.add('active'); tabCCI.classList.remove('active');
+                tableRWS.style.display = 'table'; tableCCI.style.display = 'none';
+            }
+
+            currentBox.classList.remove('show'); currentBox.classList.add('slide-out');
+            setTimeout(() => {
+                currentBox.classList.remove('slide-out'); targetBox.classList.add('show');
+            }, 180);
+        }
+
+        function add22PackageToCart() {
+            if (current22Grade === 'CCI') {
+                collectGunPackages('.22 LR (CCI)', [
+                    { name: 'ปืนยาว .22 CCI (5 นัด)', id: 'qty_cci5', price: 95, bullets: 5, targets: 1, targetType: 'เป้าปืนยาว' },
+                    { name: 'ปืนยาว .22 CCI (10 นัด)', id: 'qty_cci10', price: 150, bullets: 10, targets: 1, targetType: 'เป้าปืนยาว' },
+                    { name: 'ปืนยาว .22 CCI (20 นัด)', id: 'qty_cci20', price: 250, bullets: 20, targets: 2, targetType: 'เป้าปืนยาว' },
+                    { name: 'ปืนยาว .22 CCI (50 นัด)', id: 'qty_cci50', price: 570, bullets: 50, targets: 5, targetType: 'เป้าปืนยาว' }
+                ]);
+            } else {
+                collectGunPackages('.22 LR (RWS)', [
+                    { name: 'ปืนยาว .22 RWS (5 นัด)', id: 'qty_rws5', price: 95, bullets: 5, targets: 1, targetType: 'เป้าปืนยาว' },
+                    { name: 'ปืนยาว .22 RWS (10 นัด)', id: 'qty_rws10', price: 150, bullets: 10, targets: 1, targetType: 'เป้าปืนยาว' },
+                    { name: 'ปืนยาว .22 RWS (20 นัด)', id: 'qty_rws20', price: 250, bullets: 20, targets: 2, targetType: 'เป้าปืนยาว' },
+                    { name: 'ปืนยาว .22 RWS (50 นัด)', id: 'qty_rws50', price: 570, bullets: 50, targets: 5, targetType: 'เป้าปืนยาว' }
+                ]);
+            }
+        }
+
+        // ---------------- 2. ระบบหมุนวงแหวน 6 ช่องและเลื่อนจอ ----------------
+        const slider = document.getElementById('gunSlider');
+        const revolverMenu = document.getElementById('revolverMenu');
+        const chambers = revolverMenu.querySelectorAll('.chamber');
+
+        let currentIndex = 0;
+        let currentRotation = 0; 
+        let isAnimating = false;
+
+        function scrollToGun(index, forcedStep = null) {
+            if (isAnimating && forcedStep !== null) return;
+            
+            let diff = index - currentIndex;
+            if (forcedStep !== null) {
+                diff = forcedStep; 
+            } else {
+                if (diff === 2) diff = -1; 
+                if (diff === -2) diff = 1; 
+            }
+
+            currentRotation -= (diff * 60); 
+            currentIndex = index;
+
+            revolverMenu.style.transform = `rotate(${currentRotation}deg)`;
+            revolverMenu.style.setProperty('--current-rotation', `${currentRotation}deg`);
+
+            chambers.forEach(c => {
+                let baseAngle = parseInt(c.getAttribute('data-angle'));
+                let visualAngle = (baseAngle + currentRotation) % 360;
+                if (visualAngle < 0) visualAngle += 360;
+                
+                if (visualAngle === 0) c.classList.add('active');
+                else c.classList.remove('active');
+            });
+
+            isAnimating = true;
+            slider.scrollTo({ top: currentIndex * window.innerHeight, behavior: 'smooth' });
+            setTimeout(() => { isAnimating = false; }, 650);
+        }
+
+        scrollToGun(0, 0);
+
+        window.addEventListener('wheel', (e) => {
+            if (e.target.closest('.side-flyout') || e.target.closest('.package-mini-table')) return;
+            e.preventDefault(); 
+            if (isAnimating) return;
+
+            if (e.deltaY > 0) {
+                let next = currentIndex + 1;
+                if (next > 2) next = 0; 
+                scrollToGun(next, 1);
+            } else if (e.deltaY < 0) {
+                let prev = currentIndex - 1;
+                if (prev < 0) prev = 2; 
+                scrollToGun(prev, -1);
+            }
+        }, { passive: false });
+
+        // ---------------- 3. ลิ้นชัก และ Stepper ----------------
+        function toggleDrawer(id) {
+            const el = document.getElementById(id);
+            const isOpen = el.classList.contains('active');
+            document.querySelectorAll('.side-flyout').forEach(d => d.classList.remove('active'));
+            if (!isOpen) el.classList.add('active');
+        }
+
+        function tweakStep(id, delta) {
+            const inp = document.getElementById(id);
+            let v = parseInt(inp.value) || 0;
+            v = Math.max(0, v + delta);
+            inp.value = v;
+        }
+
+        // ---------------- 4. ตะกร้าสินค้า (แยกเป้าปืนยาว/ปืนสั้น) ----------------
+        let myCart = [];
+
+        function collectGunPackages(stockKey, pkgConfigs) {
+            let addedCount = 0;
+            pkgConfigs.forEach(cfg => {
+                const inp = document.getElementById(cfg.id);
+                const qty = parseInt(inp.value) || 0;
+                if (qty > 0) {
+                    const existing = myCart.find(x => x.stockKey === stockKey && x.pkgName === cfg.name);
+                    if (existing) {
+                        existing.qty += qty;
+                    } else {
+                        myCart.push({
+                            stockKey: stockKey,
+                            pkgName: cfg.name,
+                            price: cfg.price,
+                            bullets: cfg.bullets,
+                            targets: cfg.targets || 0,
+                            targetType: cfg.targetType || 'เป้าปืนยาว',
+                            qty: qty
+                        });
+                    }
+                    inp.value = 0;
+                    addedCount += qty;
+                }
+            });
+
+            if (addedCount === 0) {
+                alert('กรุณากดเพิ่มจำนวนแพ็กเกจอย่างน้อย 1 แพ็ก'); return;
+            }
+            drawCart();
+            toggleDrawer('cartDrawer');
+        }
+
+        function drawCart() {
+            const bucket = document.getElementById('cartBucket');
+            bucket.innerHTML = '';
+            let sum = 0, count = 0;
+
+            myCart.forEach((it, idx) => {
+                const sub = it.price * it.qty;
+                sum += sub; count += it.qty;
+                bucket.innerHTML += `
+                    <div class="d-flex justify-content-between align-items-center bg-dark p-2 mb-2 rounded border border-secondary">
+                        <div>
+                            <div class="fw-bold">${it.pkgName}</div>
+                            <div class="small text-secondary">× ${it.qty} แพ็ก (กระสุน ${it.bullets * it.qty} นัด | ${it.targetType || 'เป้า'} ${it.targets * it.qty} แผ่น)</div>
+                            <div class="text-warning small">${sub} บาท</div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="dropItem(${idx})">&times;</button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('cartTotalSum').innerText = sum + ' ฿';
+            document.getElementById('cartBadge').innerText = count;
+        }
+
+        function dropItem(idx) { myCart.splice(idx, 1); drawCart(); }
+
+        // ---------------- 5. ระบบชำระเงิน QR ----------------
+        function openPaymentModal() {
+            if (myCart.length === 0) { alert('ยังไม่มีสินค้าในตะกร้า'); return; }
+            let total = myCart.reduce((sum, it) => sum + (it.price * it.qty), 0);
+            document.getElementById('payModalTotalText').innerText = 'ยอดชำระ: ' + total + ' บาท';
+            toggleDrawer('cartDrawer');
+            document.getElementById('paymentModalOverlay').style.display = 'flex';
+        }
+
+        function closePaymentModal() { 
+            document.getElementById('paymentModalOverlay').style.display = 'none'; 
+            const preview = document.getElementById('slipPreviewImg');
+            if (preview) { preview.style.display = 'none'; preview.src = ''; }
+            const statusText = document.getElementById('uploadStatusText');
+            if (statusText) statusText.innerText = 'คลิกเพื่อแนบรูปสลิปหลักฐานโอนเงิน';
+            const fileInput = document.getElementById('slipFileInput');
+            if (fileInput) fileInput.value = '';
+        }
+
+        function handleFileSelected(input) { 
+            handleImageSelectForCrop(input, {
+                aspectRatio: NaN, // Free-form crop for payment slips
+                isSlip: true,
+                modalTitle: 'ปรับแต่งและครอบตัดรูปภาพสลิปโอนเงิน',
+                previewImgId: 'slipPreviewImg',
+                statusTextId: 'uploadStatusText'
+            });
+        }
+
+        function handleDrawerAvatarChange(input) {
+            handleImageSelectForCrop(input, {
+                aspectRatio: 1 / 1,
+                modalTitle: 'ครอบตัดรูปโปรไฟล์ใหม่',
+                previewImgId: 'drawerAvatarImg'
+            });
+
+            const modalEl = document.getElementById('kkuCropModal');
+            if (modalEl) {
+                const onModalHidden = function() {
+                    modalEl.removeEventListener('hidden.bs.modal', onModalHidden);
+                    if (input.files && input.files.length > 0) {
+                        document.getElementById('updateAvatarForm').submit();
+                    }
+                };
+                modalEl.addEventListener('hidden.bs.modal', onModalHidden);
+            }
+        }
+
+        function submitFinalCheckout() {
+            document.getElementById('cartPayloadField').value = JSON.stringify(myCart);
+            document.getElementById('checkoutWithSlipForm').submit();
+        }
+        function closeReceiptModal() { document.getElementById('receiptModalOverlay').style.display = 'none'; }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg note:', err));
+            });
+        }
+    </script>
+
+    <!-- Bootstrap 5, Cropper.js & Image Cropper Helper Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='cropper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='image_cropper_helper.js') }}"></script>
+</body>
+</html>

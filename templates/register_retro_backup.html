@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - KKU SHOOTING CLUB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Kanit', sans-serif;
+            overflow: hidden;
+        }
+
+        /* ================= 1. ขาเข้า: ขาวทั้งจอ + MEMBER ================= */
+        .entry-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #ffffff;
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: hideOverlay 2.2s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+            pointer-events: none;
+        }
+
+        .entry-text {
+            font-family: 'Teko', sans-serif;
+            font-size: 11vw; 
+            font-weight: 700;
+            color: #000000;
+            letter-spacing: 2.5vw;
+            text-transform: uppercase;
+            text-indent: 2.5vw; 
+            animation: textAnim 2.2s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes hideOverlay {
+            0%, 55% { opacity: 1; background-color: #ffffff; }
+            100% { opacity: 0; background-color: #ffffff; visibility: hidden; }
+        }
+
+        @keyframes textAnim {
+            0% { transform: scale(1.4); filter: blur(25px); opacity: 0; }
+            25% { transform: scale(1); filter: blur(0); opacity: 1; color: #000000; }
+            60% { transform: scale(1); filter: blur(0); opacity: 1; color: #000000; }
+            100% { transform: scale(0.85); filter: blur(15px); opacity: 0; color: #555555; }
+        }
+
+        /* ================= 2. ขาออก: เอฟเฟกต์ไฟไหม้กระดาษ ================= */
+        body.burning .paper-container {
+            animation: burnPaper 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+        }
+
+        body.burning .fire-flash {
+            animation: fireFlashAnim 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+        }
+
+        body.burning .fire-sparks {
+            animation: sparksAnim 1.2s ease-out forwards;
+        }
+
+        body.burning .back-link,
+        body.burning .flash-messages {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        @keyframes burnPaper {
+            0% { filter: drop-shadow(0 0 0px transparent) sepia(0); transform: scale(1); }
+            30% { filter: drop-shadow(0 0 35px #ff4500) brightness(0.65) sepia(0.6) hue-rotate(-15deg); transform: scale(0.98); }
+            60% { filter: drop-shadow(0 0 80px #ff1100) brightness(0.25) sepia(1) hue-rotate(-30deg) contrast(2) saturate(2); transform: scale(0.92) translateY(20px) rotate(-1deg); opacity: 1; }
+            100% { filter: drop-shadow(0 0 100px #ff0000) brightness(0) sepia(1) hue-rotate(-50deg) contrast(3) saturate(3); transform: scale(0.8) translateY(60px) rotate(-3deg); opacity: 0; }
+        }
+
+        .fire-flash {
+            position: fixed;
+            bottom: -20vh; left: 0; width: 100vw; height: 120vh;
+            background: radial-gradient(ellipse at bottom center, rgba(255, 60, 0, 0.85) 0%, rgba(200, 20, 0, 0.5) 35%, transparent 70%);
+            opacity: 0; z-index: 9998; pointer-events: none; mix-blend-mode: screen;
+        }
+
+        @keyframes fireFlashAnim {
+            0% { opacity: 0; transform: scaleY(0.5); }
+            40% { opacity: 1; transform: scaleY(1); }
+            80% { opacity: 0.8; transform: scaleY(1.3); }
+            100% { opacity: 0; transform: scaleY(1.5); }
+        }
+
+        .fire-sparks {
+            position: fixed;
+            bottom: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: radial-gradient(circle, #ffaa00 2.5px, transparent 2.5px), radial-gradient(circle, #ff4400 3.5px, transparent 3.5px);
+            background-size: 150px 150px, 200px 200px;
+            background-position: 0 0, 50px 50px;
+            opacity: 0; z-index: 9999; pointer-events: none; mix-blend-mode: screen;
+        }
+
+        @keyframes sparksAnim {
+            0% { opacity: 0; background-position: 0 0, 50px 50px; }
+            20% { opacity: 1; }
+            100% { opacity: 0; background-position: 0 -400px, 100px -300px; }
+        }
+
+        /* ================= 3. เลย์เอาต์กระดาษ (Layout) ================= */
+        .paper-container {
+            position: relative;
+            width: 100vw;
+            max-width: calc(100vh * (2752 / 1536));
+            aspect-ratio: 2752 / 1536;
+            background-image: url("{{ url_for('static', filename='register_bg.jpg') }}");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            container-type: size;
+            z-index: 10;
+        }
+
+        .paper-header {
+            position: absolute;
+            top: 14%; left: 50%; transform: translateX(-50%);
+            text-align: center;
+            color: #2c1a12; opacity: 0.85; width: 80%;
+        }
+        .paper-header h1 {
+            font-family: 'Teko', sans-serif; font-size: 7cqh; font-weight: 700;
+            margin: 0; letter-spacing: 4px; line-height: 1;
+        }
+        .paper-header p {
+            font-family: 'Kanit', sans-serif; font-size: 2.5cqh; margin: 5px 0 0 0;
+            font-weight: 600; letter-spacing: 1.5px;
+            border-bottom: 2px solid rgba(44, 26, 18, 0.4); display: inline-block; padding-bottom: 4px;
+        }
+
+        /* ---------------- สไตล์กล่องอัปโหลดรูปโปรไฟล์ ---------------- */
+        .profile-upload-container {
+            position: absolute;
+            top: 29.2%; left: 10%; width: 14%; height: 26%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start;
+        }
+
+        .profile-preview {
+            width: 100%; aspect-ratio: 3/4;
+            background: rgba(0, 0, 0, 0.05);
+            border: 2px dashed rgba(44, 26, 18, 0.4);
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .profile-preview:hover {
+            background: rgba(139, 69, 19, 0.1);
+            border-color: #5c2c16;
+        }
+
+        .profile-preview img {
+            width: 100%; height: 100%;
+            object-fit: cover; display: none;
+        }
+
+        .profile-preview i {
+            font-size: 3cqh; color: rgba(44, 26, 18, 0.6);
+        }
+
+        .profile-upload-text {
+            font-family: 'Kanit', sans-serif;
+            font-size: 1.8cqh; color: #4a2e1b;
+            margin-top: 10px; text-align: center; font-weight: 500;
+        }
+
+        /* ---------------- สไตล์ช่องกรอกข้อมูล ---------------- */
+        .ink-input {
+            position: absolute;
+            background: transparent; border: none; outline: none;
+            color: #2c1a12; font-family: 'Kanit', sans-serif;
+            font-size: 2.8cqh; font-weight: 500; padding: 0 1.5%;
+        }
+        .ink-input::placeholder { color: rgba(60, 40, 30, 0.45); font-weight: 400; }
+        .ink-input:focus { background: rgba(139, 69, 19, 0.08); border-radius: 4px; }
+
+        /* พิกัดช่อง */
+        #username { top: 29.2%; left: 26.4%; width: 23.0%; height: 4.9%; }
+        #password { top: 29.2%; left: 50.7%; width: 23.0%; height: 4.9%; }
+        #prefix     { top: 39.7%; left: 26.4%; width: 10.8%; height: 4.8%; }
+        #first_name { top: 39.7%; left: 38.6%; width: 15.0%; height: 4.8%; }
+        #last_name  { top: 39.7%; left: 55.0%; width: 18.6%; height: 4.8%; }
+        #faculty       { top: 49.9%; left: 26.4%; width: 31.5%; height: 5.0%; }
+        #academic_year { top: 49.9%; left: 59.2%; width: 14.4%; height: 5.0%; }
+        #student_id { top: 60.5%; left: 26.4%; width: 23.0%; height: 4.9%; }
+        #phone      { top: 60.5%; left: 50.7%; width: 23.0%; height: 4.9%; }
+        #kku_mail { top: 71.0%; left: 26.4%; width: 47.3%; height: 4.8%; }
+
+        .ink-btn {
+            position: absolute; top: 79.6%; left: 26.4%; width: 47.3%; height: 7.1%;
+            background: transparent; border: none; cursor: pointer; color: #1f110a;
+            font-family: 'Kanit', sans-serif; font-size: 3.5cqh; font-weight: 700;
+            letter-spacing: 2px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .ink-btn:hover { background: rgba(0, 0, 0, 0.04); transform: scale(0.995); color: #5c2c16; }
+
+        .flash-messages {
+            position: absolute; top: 24%; left: 50%; transform: translateX(-50%);
+            width: 50%; text-align: center; z-index: 50;
+        }
+        .flash-item {
+            background: rgba(139, 0, 0, 0.85); color: white; padding: 1% 3%;
+            border-radius: 4px; font-size: 2.2cqh; margin-bottom: 2%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .back-link {
+            position: absolute; top: 88.5%; left: 50%; transform: translateX(-50%);
+            color: #4a2e1b; font-size: 2.4cqh; text-decoration: none; font-weight: 500;
+            border-bottom: 1.5px dashed #4a2e1b; transition: 0.2s; z-index: 20;
+        }
+        .back-link:hover { color: #ff3300; border-bottom-color: #ff3300; }
+    </style>
+</head>
+<body>
+
+    <div id="entryOverlay" class="entry-overlay">
+        <div class="entry-text">MEMBER</div>
+    </div>
+
+    <div class="fire-flash"></div>
+    <div class="fire-sparks"></div>
+
+    <div class="paper-container">
+        
+        <div class="paper-header">
+            <h1>KKU SHOOTING CLUB</h1>
+            <p>แบบฟอร์มลงทะเบียนสมาชิก (MEMBER REGISTRATION FORM)</p>
+        </div>
+
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div class="flash-item">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- ฟอร์มลงทะเบียน พร้อม enctype อัปโหลดไฟล์ -->
+        <form method="POST" action="/register" enctype="multipart/form-data">
+            
+            <!-- กล่องอัปโหลดรูปโปรไฟล์ -->
+            <div class="profile-upload-container">
+                <input type="file" id="profile_image" name="profile_image" accept="image/*" style="display: none;" onchange="previewProfile(this)">
+                <div class="profile-preview" onclick="document.getElementById('profile_image').click();" title="คลิกเพื่ออัปโหลดรูป">
+                    <i class="bi bi-person-bounding-box" id="profileIcon"></i>
+                    <img id="profileImgPreview" src="" alt="Profile Preview">
+                </div>
+                <div class="profile-upload-text">อัปโหลดรูปภาพประจำตัว</div>
+            </div>
+
+            <input type="text" id="username" name="username" class="ink-input" placeholder="Username (ชื่อผู้ใช้)" required>
+            <input type="password" id="password" name="password" class="ink-input" placeholder="Password (รหัสผ่าน)" required>
+            <input type="text" id="prefix" name="prefix" class="ink-input" placeholder="คำนำหน้า" required>
+            <input type="text" id="first_name" name="first_name" class="ink-input" placeholder="ชื่อจริง" required>
+            <input type="text" id="last_name" name="last_name" class="ink-input" placeholder="นามสกุล" required>
+            <input type="text" id="faculty" name="faculty" class="ink-input" placeholder="ตัวย่อคณะ (เช่น ED, MD)" required>
+            <input type="text" id="academic_year" name="academic_year" class="ink-input" placeholder="ชั้นปี (เช่น 1)" required>
+            <input type="text" id="student_id" name="student_id" class="ink-input" placeholder="รหัสนักศึกษา (มีขีด)" required>
+            <input type="text" id="phone" name="phone" class="ink-input" placeholder="เบอร์โทรศัพท์" required>
+            <input type="email" id="kku_mail" name="kku_mail" class="ink-input" placeholder="KKU Email" required>
+            
+            <button type="submit" class="ink-btn">ยืนยันการลงทะเบียน</button>
+        </form>
+
+        <a href="{{ url_for('login') }}" class="back-link" onclick="burnTransition(event, this.href)">มีบัญชีอยู่แล้ว? กลับหน้าเข้าสู่ระบบ</a>
+    </div>
+
+    <script>
+        function burnTransition(event, url) {
+            event.preventDefault(); 
+            document.body.classList.add('burning');
+            setTimeout(() => { window.location.href = url; }, 1200);
+        }
+
+        function previewProfile(input) {
+            const preview = document.getElementById('profileImgPreview');
+            const icon = document.getElementById('profileIcon');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    icon.style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+                icon.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

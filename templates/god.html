@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KKU Shoot">
+    <meta name="theme-color" content="#080c14">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <title>แดชบอร์ดผู้ดูแลระบบ - KKU SHOOTING CLUB</title>
+    <!-- Club Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='club_logo.png') }}">
+    <!-- Bootstrap 5, Icons & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --bg-body: #070a12;
+            --bg-card: #0f172a;
+            --bg-card-hover: #141f36;
+            --bg-input: #0b1120;
+            --border-card: #1e293b;
+            --border-highlight: #334155;
+            --primary-blue: #2563eb;
+            --accent-gold: #f59e0b;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-cyan: #06b6d4;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Kanit', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding-bottom: 50px;
+            background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 60%);
+        }
+
+        /* ---------------- TOP NAVBAR ---------------- */
+        .executive-navbar {
+            background: linear-gradient(180deg, #101827 0%, #0b1120 100%);
+            border-bottom: 1px solid var(--border-card);
+            padding: 14px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.85rem;
+            letter-spacing: 1.5px;
+            color: #ffffff;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .brand-subtitle {
+            font-size: 0.82rem;
+            color: #38bdf8;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        /* ---------------- KPI STAT CARDS ---------------- */
+        .kpi-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            padding: 22px 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-highlight);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .kpi-icon-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 14px;
+        }
+
+        .kpi-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .kpi-value {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.3rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .kpi-subtext {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        /* ---------------- TABS ---------------- */
+        .executive-tabs {
+            border-bottom: 1px solid var(--border-card);
+            gap: 6px;
+        }
+
+        .executive-tabs .nav-link {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 12px 20px;
+            border: 1px solid transparent;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            background: transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .executive-tabs .nav-link:hover {
+            color: #ffffff;
+            background: rgba(30, 41, 59, 0.4);
+        }
+
+        .executive-tabs .nav-link.active {
+            color: #38bdf8;
+            background: var(--bg-card);
+            border-color: var(--border-card) var(--border-card) transparent var(--border-card);
+            font-weight: 600;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ---------------- CONTENT CARDS & TABLES ---------------- */
+        .content-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            margin-bottom: 24px;
+        }
+
+        .section-heading-clean {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .table-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: #cbd5e1;
+            font-size: 0.92rem;
+        }
+
+        .table-custom th {
+            background: #0b1120;
+            color: var(--text-sub);
+            font-weight: 600;
+            padding: 12px 14px;
+            border-bottom: 2px solid var(--border-card);
+            font-size: 0.84rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-custom td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+            vertical-align: middle;
+        }
+
+        .table-custom tr:hover td {
+            background: rgba(30, 41, 59, 0.35);
+            color: #ffffff;
+        }
+
+        /* Controls */
+        .form-control-dark {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-card);
+            color: #ffffff;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+
+        .form-control-dark:focus {
+            background-color: #0d1527;
+            border-color: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+            outline: none;
+        }
+
+        /* Badges */
+        .badge-hash {
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-weight: 500;
+            font-size: 0.74rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .badge-division {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        /* Stock Cards */
+        .stock-card-mini {
+            background: #0b1120;
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.2s;
+        }
+
+        .stock-card-mini:hover {
+            border-color: #334155;
+            transform: translateY(-2px);
+        }
+
+        .stock-val {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP NAVBAR -->
+    <header class="executive-navbar">
+        <div class="container-fluid px-lg-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <img src="{{ url_for('static', filename='club_logo.png') }}" alt="KKU Shooting Club" style="width: 48px; height: 48px; object-fit: contain;">
+                <div>
+                    <h1 class="brand-title">KKU SHOOTING CLUB</h1>
+                    <p class="brand-subtitle"><i class="bi bi-shield-check me-1"></i>ระบบบริหารจัดการข้อมูลและสถิติภาพรวม (Back-office Dashboard)</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 px-3 py-2 d-none d-md-inline-flex align-items-center gap-1">
+                    <i class="bi bi-person-fill-lock"></i> SUPERADMIN: {{ session.get('username', 'KoldP') }}
+                </span>
+
+                <a href="{{ url_for('export_members_csv') }}" class="btn btn-sm btn-success d-flex align-items-center gap-1 px-3 shadow-sm" title="ดาวน์โหลดรายชื่อสมาชิกสำหรับส่ง กพศ. มข.">
+                    <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                    <span>ส่งออกข้อมูลสมาชิก (Excel)</span>
+                </a>
+
+                <a href="{{ url_for('god_backup_db') }}" class="btn btn-sm btn-outline-warning d-flex align-items-center gap-1 px-3 shadow-sm" title="สำรองฐานข้อมูล SQLite ทั้งหมด (.db) แบบทันที">
+                    <i class="bi bi-database-fill-down"></i>
+                    <span>สำรองฐานข้อมูล (.db)</span>
+                </a>
+
+                <a href="{{ url_for('operator_dashboard') }}" class="btn btn-sm btn-outline-info d-flex align-items-center gap-1">
+                    <i class="bi bi-box-seam"></i> หน้าจัดการคลัง (HUD)
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1">
+                    <i class="bi bi-box-arrow-right"></i> ออกจากระบบ
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid px-lg-5 mt-4">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-info bg-primary bg-opacity-25 text-white border border-primary border-opacity-50 py-2 px-3 mb-4 rounded-3 d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                <div class="flex-grow-1">{{ messages[0] }}</div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- ================= 1. EXECUTIVE KPI SUMMARY ================= -->
+        <div class="row g-3 mb-4">
+            <!-- KPI 1: รายรับรวม -->
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-title">ยอดรายรับสะสม (Total Revenue)</div>
+                            <div class="kpi-value text-success">฿ {{ "{:,}".format(stats.total_revenue) }}</div>
+                            <div class="kpi-subtext">
+                                กระสุน <strong>{{ "{:,}".format(stats.total_bullets_sold) }}</strong> นัด | เป้า <strong>{{ "{:,}".format(stats.total_targets_sold) }}</strong> แผ่น
+                            </div>
+                        </div>
+                        <div class="kpi-icon-badge bg-success bg-opacity-15 text-success">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 2: สมาชิกทั้งหมด -->
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-title">สมาชิกชมรมทั้งหมด (Members)</div>
+                            <div class="kpi-value text-info">{{ stats.total_members }} <span style="font-size: 1.2rem; font-family:'Kanit'; font-weight:normal; color:#94a3b8;">คน</span></div>
+                            <div class="kpi-subtext">
+                                <i class="bi bi-check-circle-fill text-info me-1"></i>ลงทะเบียนยืนยันผ่าน @kkumail.com
+                            </div>
+                        </div>
+                        <div class="kpi-icon-badge bg-info bg-opacity-15 text-info">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 3: คณะกรรมการประจำการ -->
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-title">คณะกรรมการชมรม (Board)</div>
+                            <div class="kpi-value text-warning">{{ stats.total_operators }} <span style="font-size: 1.2rem; font-family:'Kanit'; font-weight:normal; color:#94a3b8;">คน</span></div>
+                            <div class="kpi-subtext">
+                                ปฏิบัติหน้าที่ใน 7 ฝ่ายงานหลักของชมรม
+                            </div>
+                        </div>
+                        <div class="kpi-icon-badge bg-warning bg-opacity-15 text-warning">
+                            <i class="bi bi-shield-lock-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 4: คำขอรออนุมัติ -->
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card" style="border-color: {% if stats.pending_operators_count > 0 or stats.pending_orders_count > 0 %}rgba(245, 158, 11, 0.4){% else %}var(--border-card){% endif %};">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-title">งานรอดำเนินการ (Pending Tasks)</div>
+                            <div class="kpi-value text-amber" style="color: #fbbf24;">
+                                {{ stats.pending_operators_count + stats.pending_orders_count }} <span style="font-size: 1.2rem; font-family:'Kanit'; font-weight:normal; color:#94a3b8;">รายการ</span>
+                            </div>
+                            <div class="kpi-subtext">
+                                กรรมการใหม่: <strong class="text-warning">{{ stats.pending_operators_count }}</strong> | สลิปรอตรวจ: <strong class="text-warning">{{ stats.pending_orders_count }}</strong>
+                            </div>
+                        </div>
+                        <div class="kpi-icon-badge bg-danger bg-opacity-15 text-danger">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 2. DASHBOARD TABS ================= -->
+        <ul class="nav executive-tabs mb-4" id="executiveTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane" type="button" role="tab">
+                    <i class="bi bi-grid-1x2-fill"></i> ภาพรวมสถิติและคลัง
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link position-relative" id="operators-tab" data-bs-toggle="tab" data-bs-target="#operators-pane" type="button" role="tab">
+                    <i class="bi bi-shield-shaded"></i> คณะกรรมการ (7 ฝ่าย)
+                    {% if stats.pending_operators_count > 0 %}
+                    <span class="badge bg-warning text-dark ms-1 fw-bold">{{ stats.pending_operators_count }}</span>
+                    {% endif %}
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="members-tab" data-bs-toggle="tab" data-bs-target="#members-pane" type="button" role="tab">
+                    <i class="bi bi-people-fill"></i> ทะเบียนสมาชิกและกระเป๋า ({{ members|length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders-pane" type="button" role="tab">
+                    <i class="bi bi-receipt"></i> ประวัติคำสั่งซื้อและสลิป
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="executiveTabContent">
+
+            <!-- ================= TAB 1: OVERVIEW & INVENTORY ================= -->
+            <div class="tab-pane fade show active" id="overview-pane" role="tabpanel">
+
+                <!-- คลังพัสดุปัจจุบัน (5 รายการ) -->
+                <div class="content-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="section-heading-clean m-0">
+                            <i class="bi bi-box-seam-fill text-info"></i> ยอดคงเหลือพัสดุและกระสุนในคลังกลาง (5 รายการ)
+                        </div>
+                        <a href="{{ url_for('operator_dashboard') }}" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-sliders me-1"></i> เข้าหน้าจัดการสต็อกคลัง
+                        </a>
+                    </div>
+
+                    <div class="row g-3">
+                        {% for item in inventory %}
+                        <div class="col-xl col-md-4 col-sm-6">
+                            <div class="stock-card-mini">
+                                <div class="text-secondary small mb-1">{{ item.ammo_type }}</div>
+                                <div class="d-flex justify-content-between align-items-end">
+                                    <div class="stock-val">{{ "{:,}".format(item.quantity) }}</div>
+                                    <div>
+                                        {% if item.quantity == 0 %}
+                                            <span class="badge bg-danger">หมด</span>
+                                        {% elif item.quantity < 300 %}
+                                            <span class="badge bg-warning text-dark">ใกล้หมด</span>
+                                        {% else %}
+                                            <span class="badge bg-success bg-opacity-25 text-success">พร้อมใช้</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- ประวัติกิจกรรมคลังและคำสั่งซื้อล่าสุด (Audit Trail) -->
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="content-card h-100">
+                            <div class="section-heading-clean">
+                                <i class="bi bi-clock-history text-warning"></i> บันทึกการปรับปรุงสต็อกล่าสุด (Recent Stock Actions)
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table-custom">
+                                    <thead>
+                                        <tr>
+                                            <th>วันเวลา</th>
+                                            <th>ผู้ดำเนินการ</th>
+                                            <th>รายการ</th>
+                                            <th>จำนวน</th>
+                                            <th>หมายเหตุ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for tx in recent_transactions %}
+                                        <tr>
+                                            <td class="small text-secondary">{{ tx.timestamp }}</td>
+                                            <td class="fw-bold text-white">{{ tx.username }}</td>
+                                            <td>{{ tx.ammo_type }}</td>
+                                            <td>
+                                                {% if 'Add' in tx.action %}
+                                                    <span class="text-success">+{{ tx.amount }}</span>
+                                                {% elif 'Sub' in tx.action %}
+                                                    <span class="text-danger">-{{ tx.amount }}</span>
+                                                {% else %}
+                                                    <span class="text-info">Set: {{ tx.amount }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="small text-secondary">{{ tx.note or '-' }}</td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-secondary py-3">ยังไม่มีประวัติการปรับปรุงสต็อก</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="content-card h-100">
+                            <div class="section-heading-clean">
+                                <i class="bi bi-cart-check-fill text-success"></i> คำสั่งซื้อสลิปล่าสุด (Recent Orders)
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table-custom">
+                                    <thead>
+                                        <tr>
+                                            <th>รหัสคำสั่งซื้อ</th>
+                                            <th>สมาชิก</th>
+                                            <th>ยอดเงิน</th>
+                                            <th>สถานะ</th>
+                                            <th>วันเวลา</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ord in recent_orders %}
+                                        <tr>
+                                            <td class="font-monospace text-info small">{{ ord.order_no }}</td>
+                                            <td class="fw-bold text-white">{{ ord.username }}</td>
+                                            <td class="text-success fw-bold">{{ "{:,}".format(ord.total_price) }} ฿</td>
+                                            <td>
+                                                {% if ord.status == 'approved' %}
+                                                    <span class="badge bg-success bg-opacity-25 text-success">อนุมัติแล้ว</span>
+                                                {% elif ord.status == 'rejected' %}
+                                                    <span class="badge bg-danger bg-opacity-25 text-danger">ปฏิเสธ</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">รอตรวจสอบ</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="small text-secondary">{{ ord.created_at }}</td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-secondary py-3">ยังไม่มีคำสั่งซื้อในระบบ</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= TAB 2: OPERATORS & DIVISIONS ================= -->
+            <div class="tab-pane fade" id="operators-pane" role="tabpanel">
+
+                <!-- คำขอลงทะเบียนกรรมการใหม่ (รอการอนุมัติ) -->
+                {% if pending_operators and pending_operators|length > 0 %}
+                <div class="content-card" style="border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-fill-exclamation fs-4 text-warning"></i>
+                            <div>
+                                <h4 class="m-0 text-warning" style="font-size: 1.2rem; font-weight: 600;">
+                                    คำขอลงทะเบียนกรรมการใหม่ที่รอการอนุมัติ ({{ pending_operators|length }} คำขอ)
+                                </h4>
+                                <div class="small text-secondary">
+                                    ผู้ดูแลระบบ (God Admin) ต้องตรวจสอบความถูกต้องก่อนกดยืนยันสิทธิ์ให้กรรมการเข้าใช้งาน
+                                </div>
+                            </div>
+                        </div>
+                        <span class="badge bg-warning text-dark px-3 py-2 fw-bold">รอการตัดสินใจ</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>รูปถ่าย</th>
+                                    <th>Username</th>
+                                    <th>ตำแหน่งที่สมัคร</th>
+                                    <th>ชื่อ - นามสกุล</th>
+                                    <th>รหัสนักศึกษา / คณะ / ชั้นปี</th>
+                                    <th>ข้อมูลติดต่อ</th>
+                                    <th>เวลาที่ส่ง</th>
+                                    <th class="text-end">การดำเนินการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in pending_operators %}
+                                <tr>
+                                    <td>
+                                        <img src="{{ url_for('static', filename='profiles/' + (req.profile_pic if req.profile_pic else 'default_avatar.png')) }}" 
+                                             alt="Avatar" class="rounded-circle border border-warning" style="width: 44px; height: 44px; object-fit: cover;"
+                                             onerror="this.onerror=null; this.src='/static/profiles/default_avatar.png';">
+                                    </td>
+                                    <td class="fw-bold text-white fs-6">{{ req.username }}</td>
+                                    <td>
+                                        <span class="badge-division">{{ req.position or 'ฝ่ายพัสดุ' }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="text-white fw-medium">{{ req.prefix or '' }} {{ req.first_name or '' }} {{ req.last_name or '' }}</div>
+                                        <small class="text-secondary">ID #{{ req.id }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-info font-monospace">{{ req.student_id or '-' }}</div>
+                                        <small class="text-secondary">{{ req.faculty or '-' }} ({{ req.academic_year or '-' }})</small>
+                                    </td>
+                                    <td>
+                                        <div class="small text-secondary"><i class="bi bi-envelope me-1"></i>{{ req.kku_mail or '-' }}</div>
+                                        <div class="small text-secondary"><i class="bi bi-telephone me-1"></i>{{ req.phone or '-' }}</div>
+                                    </td>
+                                    <td class="small text-secondary">{{ req.created_at or '-' }}</td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <form method="POST" class="d-inline">
+                                                <input type="hidden" name="action" value="approve_operator">
+                                                <input type="hidden" name="user_id" value="{{ req.id }}">
+                                                <button type="submit" class="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1">
+                                                    <i class="bi bi-check-circle-fill"></i> อนุมัติ (APPROVE)
+                                                </button>
+                                            </form>
+                                            <form method="POST" class="d-inline" onsubmit="return confirm('ยืนยันปฏิเสธและลบคำขอลงทะเบียนของ {{ req.username }} หรือไม่?');">
+                                                <input type="hidden" name="action" value="reject_operator">
+                                                <input type="hidden" name="user_id" value="{{ req.id }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1">
+                                                    <i class="bi bi-x-circle"></i> ปฏิเสธ
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row g-4">
+                    <!-- Form: เพิ่มกรรมการใหม่ -->
+                    <div class="col-lg-4">
+                        <div class="content-card">
+                            <div class="section-heading-clean">
+                                <i class="bi bi-person-plus-fill text-warning"></i> + แต่งตั้งกรรมการใหม่ (Direct Add)
+                            </div>
+                            <form method="POST">
+                                <input type="hidden" name="action" value="add_operator">
+                                <div class="mb-3">
+                                    <label class="form-label small text-secondary">ชื่อผู้ใช้งาน (Username) *</label>
+                                    <input type="text" name="op_username" class="form-control form-control-dark" placeholder="เช่น operator_somchai" required autocomplete="off">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-secondary">กำหนดรหัสผ่าน (Password) *</label>
+                                    <input type="password" name="op_password" class="form-control form-control-dark" placeholder="กำหนดรหัสผ่าน" required autocomplete="new-password">
+                                    <small class="text-secondary" style="font-size: 0.75rem;">* รหัสผ่านจะถูกเข้ารหัสอัตโนมัติด้วย Scrypt Hash</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-secondary">ตำแหน่งในชมรม (7 ฝ่าย) *</label>
+                                    <select name="op_position" class="form-select form-control-dark">
+                                        <option value="ฝ่ายพัสดุ" selected>ฝ่ายพัสดุ</option>
+                                        <option value="ประธานชมรม">ประธานชมรม</option>
+                                        <option value="รองประธานชมรม">รองประธานชมรม</option>
+                                        <option value="เลขานุการ">เลขานุการ</option>
+                                        <option value="ฝ่ายสถานที่">ฝ่ายสถานที่</option>
+                                        <option value="ฝ่ายเทคโนโลยี">ฝ่ายเทคโนโลยี</option>
+                                        <option value="ฝ่ายการเงิน">ฝ่ายการเงิน</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-warning w-100 fw-bold">
+                                    <i class="bi bi-shield-check me-1"></i> บันทึกและแต่งตั้งกรรมการ
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- ทำเนียบคณะกรรมการปัจจุบัน -->
+                    <div class="col-lg-8">
+                        <div class="content-card">
+                            <div class="section-heading-clean">
+                                <i class="bi bi-shield-lock-fill text-info"></i> ทำเนียบคณะกรรมการชมรม ({{ operators|length }} คน)
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table-custom">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>USERNAME / ข้อมูล</th>
+                                            <th>ตำแหน่ง</th>
+                                            <th>ความปลอดภัย</th>
+                                            <th>รีเซ็ตรหัสผ่าน</th>
+                                            <th class="text-end">การจัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for op in operators %}
+                                        <tr>
+                                            <td>#{{ op.id }}</td>
+                                            <td>
+                                                <div class="fw-bold text-white">{{ op.username }}</div>
+                                                {% if op.first_name %}
+                                                <div class="small text-secondary">{{ op.prefix or '' }}{{ op.first_name }} {{ op.last_name or '' }}</div>
+                                                {% endif %}
+                                                {% if op.student_id %}
+                                                <div class="small text-info font-monospace">{{ op.student_id }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge-division">{{ op.position or 'ฝ่ายพัสดุ' }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge-hash"><i class="bi bi-shield-lock-fill me-1"></i>SCRYPT HASHED</span>
+                                            </td>
+                                            <td>
+                                                <form method="POST" class="d-flex gap-1">
+                                                    <input type="hidden" name="action" value="edit_operator_pass">
+                                                    <input type="hidden" name="user_id" value="{{ op.id }}">
+                                                    <input type="password" name="new_password" class="form-control form-control-dark form-control-sm" placeholder="รหัสใหม่" required style="width: 110px;">
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning">เปลี่ยน</button>
+                                                </form>
+                                            </td>
+                                            <td class="text-end">
+                                                <form method="POST" onsubmit="return confirm('ยืนยันเพิกถอนสิทธิ์กรรมการ {{ op.username }} หรือไม่?');">
+                                                    <input type="hidden" name="action" value="delete_operator">
+                                                    <input type="hidden" name="user_id" value="{{ op.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">เพิกถอน</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-secondary py-3">ยังไม่มีกรรมการในระบบ</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= TAB 3: MEMBERS & WALLETS ================= -->
+            <div class="tab-pane fade" id="members-pane" role="tabpanel">
+
+                <div class="row g-4">
+                    <!-- Form: เพิ่มสมาชิกใหม่ -->
+                    <div class="col-lg-4">
+                        <div class="content-card">
+                            <div class="section-heading-clean">
+                                <i class="bi bi-person-plus-fill text-info"></i> + ลงทะเบียนสมาชิกใหม่ (Direct Add)
+                            </div>
+                            <form method="POST">
+                                <input type="hidden" name="action" value="add_member">
+                                <div class="mb-3">
+                                    <label class="form-label small text-secondary">ชื่อผู้ใช้ (Username) *</label>
+                                    <input type="text" name="mem_username" class="form-control form-control-dark" placeholder="เช่น member_somchai" required autocomplete="off">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-secondary">รหัสผ่าน (Password) *</label>
+                                    <input type="password" name="mem_password" class="form-control form-control-dark" placeholder="กำหนดรหัสผ่าน" required autocomplete="new-password">
+                                    <small class="text-secondary" style="font-size: 0.75rem;">* รหัสผ่านจะถูกเข้ารหัสอัตโนมัติด้วย Scrypt Hash</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 fw-bold">
+                                    <i class="bi bi-person-check-fill me-1"></i> บันทึกข้อมูลสมาชิก
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- ตารางทำเนียบสมาชิก -->
+                    <div class="col-lg-8">
+                        <div class="content-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <div class="section-heading-clean m-0">
+                                    <i class="bi bi-people-fill text-info"></i> ทำเนียบสมาชิกและกระเป๋ากระสุน ({{ members|length }} คน)
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <input type="text" id="memberSearchInput" class="form-control form-control-dark form-control-sm" placeholder="🔍 ค้นหาสมาชิก..." style="width: 200px;" onkeyup="filterMembersTable()">
+                                    <a href="{{ url_for('export_members_csv') }}" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
+                                        <i class="bi bi-file-earmark-excel"></i> Export CSV
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table-custom" id="memberTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>USERNAME / นักศึกษา</th>
+                                            <th>กระเป๋ากระสุนและเป้า</th>
+                                            <th>ความปลอดภัย</th>
+                                            <th>รีเซ็ตรหัสผ่าน</th>
+                                            <th class="text-end">การจัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for mem in members %}
+                                        <tr class="member-row">
+                                            <td>#{{ mem.id }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img src="{{ url_for('static', filename='profiles/' + (mem.profile_pic if mem.profile_pic else 'default_avatar.png')) }}" 
+                                                         alt="Avatar" class="rounded-circle border border-secondary" style="width: 38px; height: 38px; object-fit: cover;"
+                                                         onerror="this.onerror=null; this.src='/static/profiles/default_avatar.png';">
+                                                    <div>
+                                                        <div class="fw-bold text-white member-search-target">{{ mem.username }}</div>
+                                                        {% if mem.first_name %}
+                                                        <div class="small text-secondary member-search-target">{{ mem.prefix or '' }}{{ mem.first_name }} {{ mem.last_name or '' }}</div>
+                                                        {% endif %}
+                                                        {% if mem.student_id %}
+                                                        <div class="small text-info font-monospace member-search-target">{{ mem.student_id }} ({{ mem.faculty or '-' }})</div>
+                                                        {% endif %}
+                                                        {% if mem.kku_mail %}
+                                                        <div class="small text-secondary"><i class="bi bi-envelope me-1"></i>{{ mem.kku_mail }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-dark border border-secondary text-light p-2 text-wrap" style="font-size: 0.8rem; line-height: 1.4;">
+                                                    {{ mem.ammo_summary }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge-hash"><i class="bi bi-shield-lock-fill me-1"></i>SCRYPT</span>
+                                            </td>
+                                            <td>
+                                                <form method="POST" class="d-flex gap-1">
+                                                    <input type="hidden" name="action" value="edit_member_pass">
+                                                    <input type="hidden" name="user_id" value="{{ mem.id }}">
+                                                    <input type="password" name="new_password" class="form-control form-control-dark form-control-sm" placeholder="รหัสใหม่" required style="width: 100px;">
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning">เปลี่ยน</button>
+                                                </form>
+                                            </td>
+                                            <td class="text-end">
+                                                <form method="POST" onsubmit="return confirm('ยืนยันลบสมาชิก {{ mem.username }} และล้างกระเป๋ากระสุนทั้งหมดหรือไม่?');">
+                                                    <input type="hidden" name="action" value="delete_member">
+                                                    <input type="hidden" name="user_id" value="{{ mem.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">ลบ</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-secondary py-3">ยังไม่มีสมาชิกในระบบ</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= TAB 4: ORDERS & SLIPS ================= -->
+            <div class="tab-pane fade" id="orders-pane" role="tabpanel">
+                <div class="content-card">
+                    <div class="section-heading-clean">
+                        <i class="bi bi-receipt-cutoff text-success"></i> ประวัติคำสั่งซื้อและหลักฐานสลิปทั้งหมด (Recent 25 Orders)
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>รหัสคำสั่งซื้อ</th>
+                                    <th>ผู้สั่งซื้อ</th>
+                                    <th>รายการสินค้า</th>
+                                    <th>ยอดชำระ</th>
+                                    <th>สถานะ</th>
+                                    <th>ผู้ตรวจสลิป</th>
+                                    <th>วันเวลาสั่งซื้อ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ord in recent_orders %}
+                                <tr>
+                                    <td class="font-monospace text-info fw-bold">{{ ord.order_no }}</td>
+                                    <td>
+                                        <div class="text-white fw-bold">{{ ord.username }}</div>
+                                        {% if ord.first_name %}
+                                        <div class="small text-secondary">{{ ord.first_name }} {{ ord.last_name }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small">{{ ord.items_summary }}</td>
+                                    <td class="text-success fw-bold">{{ "{:,}".format(ord.total_price) }} ฿</td>
+                                    <td>
+                                        {% if ord.status == 'approved' %}
+                                            <span class="badge bg-success bg-opacity-25 text-success">อนุมัติแล้ว</span>
+                                        {% elif ord.status == 'rejected' %}
+                                            <span class="badge bg-danger bg-opacity-25 text-danger">ปฏิเสธ</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">รอตรวจสอบ</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-secondary">{{ ord.reviewed_by or '-' }}</td>
+                                    <td class="small text-secondary">{{ ord.created_at }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-secondary py-3">ยังไม่มีคำสั่งซื้อในระบบ</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Real-time search filter for member table
+        function filterMembersTable() {
+            const input = document.getElementById('memberSearchInput');
+            const filter = input.value.toLowerCase();
+            const rows = document.querySelectorAll('.member-row');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

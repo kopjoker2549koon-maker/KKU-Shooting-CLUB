@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KKU Shoot">
+    <meta name="theme-color" content="#080c14">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <title>เข้าสู่ระบบ - KKU SHOOTING CLUB</title>
+    <!-- Club Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='club_logo.png') }}">
+    <!-- Fonts & Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --member-color: #0ea5e9;
+            --member-glow: rgba(14, 165, 233, 0.4);
+            --operator-color: #f59e0b;
+            --operator-glow: rgba(245, 158, 11, 0.4);
+            --god-color: #ef4444;
+            --god-glow: rgba(239, 68, 68, 0.4);
+
+            --theme-color: var(--member-color);
+            --theme-glow: var(--member-glow);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #050811;
+            color: #f8fafc;
+            font-family: 'Kanit', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            user-select: none;
+            position: relative;
+        }
+
+        /* ---------------- 1. BACKGROUND & CINEMATIC LAYERS ---------------- */
+        .bg-video {
+            position: absolute;
+            top: 0;
+            left: -5vw;
+            width: 110vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 0;
+            filter: brightness(0.28) contrast(1.1);
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.25, 1);
+        }
+
+        .vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 65% 50%, rgba(5, 10, 20, 0.3) 0%, rgba(3, 7, 16, 0.88) 70%, rgba(2, 4, 10, 0.98) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Flash Overlay for transitions */
+        .flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .flash-active {
+            animation: violentFlash 0.7s ease-out forwards;
+        }
+
+        @keyframes violentFlash {
+            0% { opacity: 1; background-color: white; }
+            35% { opacity: 0.8; background-color: red; }
+            100% { opacity: 0; }
+        }
+
+        /* God Mode Wesker Background */
+        #godBg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        body.god-mode #godBg {
+            opacity: 0.85;
+        }
+
+        body.god-mode .models-container,
+        body.god-mode .bg-video {
+            display: none;
+        }
+
+        /* ---------------- 2. THE 2 CHARACTERS (DUO STAGE) ---------------- */
+        .models-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .char-model {
+            position: absolute;
+            object-fit: contain;
+            height: 104vh;
+            bottom: -3vh;
+            transform-origin: bottom center;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: left 0.65s cubic-bezier(0.2, 0.8, 0.25, 1), transform 0.65s cubic-bezier(0.2, 0.8, 0.25, 1), filter 0.5s ease, opacity 0.5s ease;
+        }
+
+        #charMember {
+            left: -22vw;
+        }
+
+        #charOperator {
+            left: -4vw;
+        }
+
+        .char-model.active {
+            z-index: 4;
+            opacity: 1;
+            transform: scale(1.05);
+            filter: brightness(1.1) drop-shadow(0 0 30px var(--theme-glow));
+        }
+
+        .char-model.inactive {
+            z-index: 2;
+            opacity: 0.32;
+            filter: brightness(0.22) blur(2px) grayscale(0.5);
+            transform: scale(0.95);
+        }
+
+        .char-model.inactive:hover {
+            opacity: 0.65;
+            filter: brightness(0.4) blur(0px);
+        }
+
+        body.member-mode #charMember {
+            left: -17vw;
+            z-index: 4;
+        }
+        body.member-mode #charOperator {
+            left: -3vw;
+            z-index: 2;
+        }
+
+        body.operator-mode #charMember {
+            left: -25vw;
+            z-index: 2;
+        }
+        body.operator-mode #charOperator {
+            left: -7vw;
+            z-index: 4;
+        }
+
+        /* ---------------- 3. BRAND HEADER (TOP-LEFT) ---------------- */
+        .brand-header-box {
+            position: absolute;
+            top: 25px;
+            left: 40px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-club-logo {
+            width: 58px;
+            height: 58px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.25));
+        }
+
+        .brand-title-group h1 {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.3rem;
+            line-height: 0.9;
+            letter-spacing: 2px;
+            color: #ffffff;
+            margin: 0;
+            text-shadow: 0 0 14px var(--theme-glow);
+        }
+
+        .brand-title-group p {
+            font-size: 0.88rem;
+            color: #94a3b8;
+            margin: 3px 0 0 0;
+            letter-spacing: 0.5px;
+        }
+
+        /* ---------------- 4. CLEAN MODERN DARK LOGIN CARD ---------------- */
+        .terminal-container {
+            position: absolute;
+            right: 8vw;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 460px;
+            z-index: 10;
+        }
+
+        .login-clean-card {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px var(--theme-glow);
+            backdrop-filter: blur(16px);
+            padding: 34px 32px;
+            transition: box-shadow 0.3s, border-color 0.3s;
+        }
+
+        .card-header-clean {
+            margin-bottom: 22px;
+        }
+
+        .card-header-clean h2 {
+            font-size: 1.65rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .card-header-clean p {
+            font-size: 0.92rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        /* Role Switcher Tabs (Large, Clear, High-Contrast) */
+        .role-tabs-container {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 5px;
+            display: flex;
+            gap: 6px;
+            margin-bottom: 24px;
+        }
+
+        .role-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 10px 8px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .role-tab:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .role-tab.active-member {
+            background: var(--member-color);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35);
+        }
+
+        .role-tab.active-operator {
+            background: var(--operator-color);
+            color: #0b0f19;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+        }
+
+        .role-tab.god-tab {
+            display: none;
+            background: var(--god-color);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Form Inputs (Crisp, High Contrast, Normal Borders) */
+        .form-group-clean {
+            margin-bottom: 20px;
+        }
+
+        .label-clean {
+            display: block;
+            font-size: 0.92rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper-clean {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper-clean i.input-icon {
+            position: absolute;
+            left: 14px;
+            color: #64748b;
+            font-size: 1.15rem;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .input-clean {
+            width: 100%;
+            background: #090e1a;
+            border: 1.5px solid #2d3b55;
+            border-radius: 10px;
+            color: #ffffff;
+            font-family: 'Kanit', sans-serif;
+            font-size: 1rem;
+            padding: 12px 14px 12px 44px;
+            outline: none;
+            transition: all 0.25s;
+        }
+
+        .input-clean:focus {
+            border-color: var(--theme-color);
+            background: #0d1629;
+            box-shadow: 0 0 0 3px var(--theme-glow);
+            color: #ffffff;
+        }
+
+        .input-clean:focus + i.input-icon,
+        .input-wrapper-clean:focus-within i.input-icon {
+            color: var(--theme-color);
+        }
+
+        .input-clean::placeholder {
+            color: #475569;
+            font-size: 0.92rem;
+        }
+
+        .btn-eye-toggle {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .btn-eye-toggle:hover {
+            color: var(--theme-color);
+        }
+
+        /* Submit Button */
+        .btn-submit-main {
+            width: 100%;
+            background: var(--theme-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            padding: 13px 18px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 20px var(--theme-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .btn-submit-main:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px var(--theme-glow);
+        }
+
+        .btn-submit-main:active {
+            transform: translateY(1px);
+        }
+
+        body.operator-mode .btn-submit-main {
+            color: #0b0f19;
+            font-weight: 700;
+        }
+
+        /* Card Footer */
+        .card-footer-clean {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #1e293b;
+            text-align: center;
+            font-size: 0.94rem;
+            color: #94a3b8;
+        }
+
+        .link-register-clean {
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 6px;
+            transition: color 0.2s;
+        }
+
+        .link-register-clean:hover {
+            color: #7dd3fc;
+            text-decoration: underline;
+        }
+
+        /* Error Banner */
+        .clean-error-alert {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #fca5a5;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 0.92rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-clean.input-error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35) !important;
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .shake-anim {
+            animation: errorShake 0.4s ease-in-out;
+        }
+
+        /* Hint Box */
+        .link-forgot-clean {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .link-forgot-clean:hover {
+            color: var(--theme-color);
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .char-model { height: 98vh; }
+            body.member-mode #charMember { left: -20vw; }
+            body.member-mode #charOperator { left: -5vw; }
+            body.operator-mode #charMember { left: -28vw; }
+            body.operator-mode #charOperator { left: -9vw; }
+            .terminal-container { right: 4vw; width: 430px; }
+        }
+
+        @media (max-width: 991px) {
+            .models-container { opacity: 0.25; }
+            .terminal-container {
+                right: 50%;
+                transform: translate(50%, -50%);
+                width: 90%;
+                max-width: 440px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .models-container { display: none; }
+            .terminal-container {
+                width: 94%;
+                padding: 24px 18px;
+            }
+            .brand-name { font-size: 1.25rem; }
+            .role-tab { padding: 9px 8px; font-size: 0.88rem; }
+            .input-clean { font-size: 0.95rem; padding: 11px 12px 11px 40px; }
+            .btn-submit-main { padding: 13px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body class="member-mode">
+
+    <!-- Flash Overlay for transitions -->
+    <div id="flashOverlay" class="flash-overlay"></div>
+
+    <!-- Cinematic Background Video -->
+    <video autoplay loop muted playsinline id="bgVideo" class="bg-video">
+        <source src="{{ url_for('static', filename='bg_loop.mp4') }}" type="video/mp4">
+    </video>
+    <div class="vignette"></div>
+
+    <!-- Secret God Mode Wesker Background -->
+    <img src="{{ url_for('static', filename='wesker.png') }}" id="godBg" alt="SECRET CLEARANCE">
+
+    <!-- The 2 Characters Standing Back-to-Back (Shifted Left for Perfect Clearance) -->
+    <div class="models-container">
+        <!-- Leon Member (Left) -->
+        <img src="{{ url_for('static', filename='leon_member.png') }}" 
+             id="charMember" 
+             class="char-model active" 
+             alt="สมาชิก"
+             title="คลิกเพื่อเลือกโหมดสมาชิก"
+             onclick="switchRole('member')">
+
+        <!-- Leon Operator (Right) -->
+        <img src="{{ url_for('static', filename='leon_board.png') }}?v=3" 
+             id="charOperator" 
+             class="char-model inactive" 
+             alt="กรรมการ"
+             title="คลิกเพื่อเลือกโหมดกรรมการ"
+             onclick="switchRole('operator')">
+    </div>
+
+    <!-- Top Left Brand Header with Official Club Logo -->
+    <div class="brand-header-box">
+        <img src="{{ url_for('static', filename='club_logo.png') }}" alt="KKU Shooting Club Logo" class="brand-club-logo">
+        <div class="brand-title-group">
+            <h1>KKU SHOOTING CLUB</h1>
+            <p>ชมรมกีฬายิงปืน มหาวิทยาลัยขอนแก่น</p>
+        </div>
+    </div>
+
+    <!-- Right Side: Clean, High-Contrast Login Card -->
+    <div class="terminal-container">
+        <div class="login-clean-card">
+
+            <div class="card-header-clean d-flex align-items-center gap-3">
+                <img src="{{ url_for('static', filename='club_logo.png') }}" alt="Club Logo" style="width: 52px; height: 52px; object-fit: contain;">
+                <div>
+                    <h2 id="cardTitle" class="m-0">เข้าสู่ระบบ</h2>
+                    <p id="cardSubtitle" class="m-0 text-secondary" style="font-size: 0.88rem;">ชมรมกีฬายิงปืน มหาวิทยาลัยขอนแก่น</p>
+                </div>
+            </div>
+
+            <!-- Error Alert Banner (รองรับทั้ง Flash และ Real-time AJAX แก้ไข ณ ตรงนั้น) -->
+            {% with messages = get_flashed_messages() %}
+            <div id="loginAlertBox" class="clean-error-alert" style="display: {% if messages %}flex{% else %}none{% endif %};">
+                <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+                <div id="loginAlertMsg">{% if messages %}{{ messages[0] }}{% endif %}</div>
+            </div>
+            {% endwith %}
+
+            <!-- Role Selector Tabs (Big & Clear) -->
+            <div class="role-tabs-container">
+                <button type="button" 
+                        class="role-tab active-member" 
+                        id="tabMember" 
+                        onclick="switchRole('member')">
+                    <i class="bi bi-person-fill fs-5"></i>
+                    <span>สมาชิกชมรม</span>
+                </button>
+
+                <button type="button" 
+                        class="role-tab" 
+                        id="tabOperator" 
+                        onclick="switchRole('operator')">
+                    <i class="bi bi-shield-lock-fill fs-5"></i>
+                    <span>กรรมการ</span>
+                </button>
+
+                <button type="button" 
+                        class="role-tab god-tab" 
+                        id="tabGod" 
+                        onclick="switchRole('god')">
+                    <i class="bi bi-lightning-fill"></i>
+                    <span>GOD ADMIN</span>
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+                <input type="hidden" name="role" id="roleInput" value="member">
+                <input type="hidden" name="secret_god_mode" id="godInput" value="">
+
+                <!-- Username Input -->
+                <div class="form-group-clean">
+                    <label class="label-clean" for="usernameInput">
+                        <i class="bi bi-person me-1"></i> ชื่อผู้ใช้งาน (Username, รหัสนักศึกษา หรือ KKU Mail)
+                    </label>
+                    <div class="input-wrapper-clean">
+                        <i class="bi bi-person-circle input-icon"></i>
+                        <input type="text" 
+                               name="username" 
+                               id="usernameInput" 
+                               class="input-clean" 
+                               value="{{ form_data.username if form_data else '' }}"
+                               placeholder="กรอกชื่อผู้ใช้, รหัสนักศึกษา หรือ @kkumail.com" 
+                               required 
+                               autofocus 
+                               autocomplete="username">
+                    </div>
+                </div>
+
+                <!-- Password Input -->
+                <div class="form-group-clean">
+                    <label class="label-clean" for="passwordInput">
+                        <i class="bi bi-key me-1"></i> รหัสผ่าน (Password)
+                    </label>
+                    <div class="input-wrapper-clean">
+                        <i class="bi bi-lock-fill input-icon"></i>
+                        <input type="password" 
+                               name="password" 
+                               id="passwordInput" 
+                               class="input-clean" 
+                               placeholder="กรอกรหัสผ่านของคุณ" 
+                               required 
+                               autocomplete="current-password">
+                        <button type="button" 
+                                class="btn-eye-toggle" 
+                                onclick="togglePasswordVisibility()" 
+                                title="แสดง/ซ่อนรหัสผ่าน">
+                            <i class="bi bi-eye" id="pwdEyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Link -->
+                <div class="d-flex justify-content-end mb-3 mt-1">
+                    <a href="{{ url_for('forgot_password') }}" class="link-forgot-clean">
+                        <i class="bi bi-question-circle me-1"></i>ลืมรหัสผ่าน?
+                    </a>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit-main" id="submitLoginBtn">
+                    <i class="bi bi-box-arrow-in-right fs-5"></i>
+                    <span id="submitBtnText">เข้าสู่ระบบสมาชิก</span>
+                </button>
+            </form>
+
+            <!-- Register Link -->
+            <div class="card-footer-clean" id="footerRegisterSection">
+                <span>ยังไม่มีบัญชีสมาชิก?</span>
+                <a href="{{ url_for('register') }}" class="link-register-clean">
+                    สมัครสมาชิกใหม่ <i class="bi bi-arrow-right-short"></i>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let currentRole = 'member';
+        let isGodMode = false;
+
+        const root = document.documentElement;
+        const bgVideo = document.getElementById('bgVideo');
+        const charMember = document.getElementById('charMember');
+        const charOperator = document.getElementById('charOperator');
+
+        const roleInput = document.getElementById('roleInput');
+        const godInput = document.getElementById('godInput');
+
+        const tabMember = document.getElementById('tabMember');
+        const tabOperator = document.getElementById('tabOperator');
+        const tabGod = document.getElementById('tabGod');
+
+        const submitBtnText = document.getElementById('submitBtnText');
+        const footerRegister = document.getElementById('footerRegisterSection');
+
+        function switchRole(role) {
+            currentRole = role;
+            roleInput.value = role;
+
+            tabMember.className = 'role-tab';
+            tabOperator.className = 'role-tab';
+            tabGod.className = 'role-tab god-tab';
+
+            document.body.classList.remove('member-mode', 'operator-mode', 'god-mode');
+
+            if (role === 'member') {
+                document.body.classList.add('member-mode');
+                tabMember.classList.add('active-member');
+                root.style.setProperty('--theme-color', 'var(--member-color)');
+                root.style.setProperty('--theme-glow', 'var(--member-glow)');
+
+                charMember.className = 'char-model active';
+                charOperator.className = 'char-model inactive';
+                bgVideo.style.transform = 'scale(1.04) translateX(2vw)';
+
+                submitBtnText.textContent = 'เข้าสู่ระบบสมาชิก';
+                if (footerRegister) {
+                    footerRegister.style.display = 'block';
+                    footerRegister.innerHTML = `<span>ยังไม่มีบัญชีสมาชิก?</span> <a href="/register" class="link-register-clean">สมัครสมาชิกใหม่ <i class="bi bi-arrow-right-short"></i></a>`;
+                }
+            } 
+            else if (role === 'operator') {
+                document.body.classList.add('operator-mode');
+                tabOperator.classList.add('active-operator');
+                root.style.setProperty('--theme-color', 'var(--operator-color)');
+                root.style.setProperty('--theme-glow', 'var(--operator-glow)');
+
+                charMember.className = 'char-model inactive';
+                charOperator.className = 'char-model active';
+                bgVideo.style.transform = 'scale(1.04) translateX(-2vw)';
+
+                submitBtnText.textContent = 'เข้าสู่ระบบกรรมการ';
+                if (footerRegister) {
+                    footerRegister.style.display = 'block';
+                    footerRegister.innerHTML = `<span>กรรมการเข้าใช้งานครั้งแรก?</span> <a href="/register_operator" class="link-register-clean" style="color: #fbbf24;">ลงทะเบียนส่งคำขออนุมัติที่นี่ <i class="bi bi-arrow-right-short"></i></a>`;
+                }
+            } 
+            else if (role === 'god') {
+                document.body.classList.add('god-mode');
+                tabGod.style.display = 'flex';
+                tabGod.classList.add('active-operator');
+                root.style.setProperty('--theme-color', 'var(--god-color)');
+                root.style.setProperty('--theme-glow', 'var(--god-glow)');
+
+                charMember.className = 'char-model inactive';
+                charOperator.className = 'char-model inactive';
+
+                submitBtnText.textContent = 'เข้าสู่ระบบ GOD ADMIN';
+                if (footerRegister) footerRegister.style.display = 'none';
+            }
+
+            document.getElementById('usernameInput').focus();
+        }
+
+        // Toggle Password Visibility
+        function togglePasswordVisibility() {
+            const pwd = document.getElementById('passwordInput');
+            const icon = document.getElementById('pwdEyeIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                pwd.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+
+        // Quick keys: 1 for Member, 2 for Operator
+        document.addEventListener('keydown', function(event) {
+            if (document.activeElement.tagName === 'INPUT') return;
+
+            if (event.key === '1') { switchRole('member'); return; }
+            if (event.key === '2') { switchRole('operator'); return; }
+
+            // Secret God Mode Code (wwssadad)
+            if (event.key.toLowerCase() === secretCode[keyIndex]) {
+                keyIndex++;
+                if (keyIndex === secretCode.length) {
+                    activateGodMode();
+                    keyIndex = 0;
+                }
+            } else {
+                if (event.key.toLowerCase() === secretCode[0]) keyIndex = 1; else keyIndex = 0;
+            }
+        });
+
+        const secretCode = ['w', 'w', 's', 's', 'a', 'd', 'a', 'd'];
+        let keyIndex = 0;
+
+        function activateGodMode() {
+            if (isGodMode) return;
+            isGodMode = true;
+
+            const flash = document.getElementById('flashOverlay');
+            flash.classList.remove('flash-active');
+            void flash.offsetWidth;
+            flash.classList.add('flash-active');
+
+            document.body.classList.add('god-mode');
+            godInput.value = 'activated';
+            tabGod.style.display = 'flex';
+            switchRole('god');
+        }
+
+        // Page transition to register with white flash
+        function pageTransition(event, url) {
+            event.preventDefault();
+            const flash = document.getElementById('flashOverlay');
+            if (flash) {
+                flash.style.backgroundColor = '#ffffff';
+                flash.style.opacity = '1';
+                flash.style.transition = 'opacity 0.28s ease-out';
+            }
+            setTimeout(() => {
+                window.location.href = url;
+            }, 260);
+        }
+
+        // Seamless Login Form Intercept: ถ้าผิดพลาดให้แก้ไข ณ ตรงนั้นได้ทันทีโดยไม่ต้องเริ่มพิมพ์ใหม่
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const submitBtn = document.getElementById('submitLoginBtn');
+                const submitBtnText = document.getElementById('submitBtnText');
+                const alertBox = document.getElementById('loginAlertBox');
+                const alertMsg = document.getElementById('loginAlertMsg');
+                const usernameInput = document.getElementById('usernameInput');
+                const passwordInput = document.getElementById('passwordInput');
+
+                usernameInput.classList.remove('input-error');
+                passwordInput.classList.remove('input-error');
+
+                const originalBtnHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> กำลังเข้าสู่ระบบ...';
+
+                try {
+                    const formData = new FormData(loginForm);
+                    const res = await fetch(loginForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const data = await res.json();
+                    if (data.success) {
+                        submitBtn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> เข้าสู่ระบบสำเร็จ!';
+                        window.location.href = data.redirect;
+                    } else {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHtml;
+
+                        if (alertBox && alertMsg) {
+                            alertMsg.textContent = data.message || 'ข้อมูลไม่ถูกต้อง';
+                            alertBox.style.display = 'flex';
+                            alertBox.classList.remove('shake-anim');
+                            void alertBox.offsetWidth;
+                            alertBox.classList.add('shake-anim');
+                        }
+
+                        if (data.field === 'password') {
+                            passwordInput.classList.add('input-error');
+                            passwordInput.value = '';
+                            passwordInput.focus();
+                        } else if (data.field === 'username') {
+                            usernameInput.classList.add('input-error');
+                            usernameInput.select();
+                        } else {
+                            passwordInput.focus();
+                        }
+                    }
+                } catch (err) {
+                    loginForm.submit();
+                }
+            });
+        }
+
+        // Auto-switch to role from URL query param (e.g. ?role=operator)
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('role') === 'operator') {
+                switchRole('operator');
+            }
+        });
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg note:', err));
+            });
+        }
+    </script>
+</body>
+</html>

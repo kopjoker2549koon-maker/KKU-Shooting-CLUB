@@ -1,0 +1,28 @@
+{
+  "name": "KKU Shooting Club - ชมรมยิงปืน มหาวิทยาลัยขอนแก่น",
+  "short_name": "KKU Shoot",
+  "description": "ระบบบริหารจัดการชมรม บัตรสมาชิกดิจิทัล และเบิกจ่ายกระสุน ชมรมยิงปืน มหาวิทยาลัยขอนแก่น",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#080c14",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

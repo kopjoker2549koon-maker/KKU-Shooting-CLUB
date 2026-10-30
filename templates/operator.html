@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KKU Shoot">
+    <meta name="theme-color" content="#080c14">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <title>แผงควบคุมกรรมการชมรม - KKU Shooting Club</title>
+    <!-- Club Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='club_logo.png') }}">
+    <!-- Bootstrap 5 & Icons & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Camera & Barcode QR Scanner Library -->
+    <script src="{{ url_for('static', filename='html5-qrcode.min.js') }}"></script>
+
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151d30;
+            --bg-card-hover: #1a243c;
+            --border-card: #263352;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --color-primary: #0ea5e9;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* ---------------- NAVBAR ---------------- */
+        .operator-navbar {
+            background: linear-gradient(180deg, #131b2e 0%, #0e1424 100%);
+            border-bottom: 1px solid var(--border-card);
+            padding: 12px 28px;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .brand-logo-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(14, 165, 233, 0.15);
+            border: 1.5px solid var(--color-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            font-size: 1.5rem;
+        }
+
+        .brand-title-main {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.7rem;
+            letter-spacing: 1.5px;
+            line-height: 1.1;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .brand-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .user-profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-card);
+            padding: 5px 14px;
+            border-radius: 30px;
+        }
+
+        .user-avatar-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #0284c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        /* ---------------- INVENTORY CARDS ---------------- */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .inv-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .inv-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(14, 165, 233, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+        }
+
+        .inv-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .inv-name {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .inv-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .inv-thumb-box {
+            width: 100%;
+            height: 90px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 8px 0;
+            padding: 6px;
+        }
+
+        .inv-thumb-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .inv-count-row {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin: 8px 0 4px 0;
+        }
+
+        .inv-count-val {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #ffffff;
+        }
+
+        .inv-count-unit {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .status-pill.normal {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-pill.low {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-pill.out {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-manage-stock {
+            width: 100%;
+            margin-top: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-card);
+            color: #e2e8f0;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.9rem;
+            padding: 7px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-manage-stock:hover {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+        }
+
+        /* ---------------- TAB NAVIGATION ---------------- */
+        .workspace-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .nav-tabs-modern {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border-card);
+            padding-bottom: 2px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn-modern {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: 'Kanit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .tab-btn-modern:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tab-btn-modern.active {
+            color: var(--color-primary);
+            font-weight: 600;
+            background: rgba(14, 165, 233, 0.08);
+            border-bottom: 3px solid var(--color-primary);
+        }
+
+        .pending-count-tag {
+            background: var(--color-warning);
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 12px;
+        }
+
+        /* ---------------- PENDING ORDERS LIST ---------------- */
+        .order-card-row {
+            background: #111827;
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 14px;
+            display: grid;
+            grid-template-columns: 2fr 2.5fr 1.5fr 1.8fr;
+            align-items: center;
+            gap: 16px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .order-card-row:hover {
+            border-color: rgba(245, 158, 11, 0.5);
+            background: #141d30;
+        }
+
+        .order-meta-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .order-id-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.35rem;
+            color: var(--color-warning);
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .order-user-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .order-user-sub {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .order-items-detail {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .order-summary-text {
+            font-size: 0.92rem;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+        }
+
+        .order-price-badge {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fde047;
+        }
+
+        .slip-preview-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slip-thumb-clickable {
+            width: 55px;
+            height: 70px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1.5px solid var(--border-card);
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.15s;
+            background: #000;
+            flex-shrink: 0;
+        }
+
+        .slip-thumb-clickable:hover {
+            transform: scale(1.08);
+            border-color: var(--color-primary);
+        }
+
+        .slip-thumb-clickable img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slip-view-link {
+            font-size: 0.82rem;
+            color: var(--color-primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .slip-view-link:hover { text-decoration: underline; }
+
+        .order-actions-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-modern-approve {
+            background: #059669;
+            border: none;
+            color: #ffffff;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .btn-modern-approve:hover {
+            background: #10b981;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-modern-reject {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-modern-reject:hover {
+            background: #dc2626;
+            color: #ffffff;
+            border-color: #dc2626;
+        }
+
+        .empty-state-box {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-icon-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--color-success);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px auto;
+        }
+
+        /* ---------------- DATA TABLES ---------------- */
+        .modern-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        .modern-table th {
+            background: #0f172a;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 12px 14px;
+            border-bottom: 2px solid var(--border-card);
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+
+        .modern-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .modern-table tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+            color: #ffffff;
+        }
+
+        .table-responsive-box {
+            max-height: 520px;
+            overflow-y: auto;
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+        }
+
+        .table-search-bar {
+            margin-bottom: 14px;
+            position: relative;
+            max-width: 320px;
+        }
+
+        .table-search-input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-card);
+            color: #ffffff;
+            padding: 6px 12px 6px 36px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .table-search-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+        }
+
+        .table-search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* ---------------- MODALS ---------------- */
+        .modal-content-dark {
+            background-color: #131b2e;
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            color: #ffffff;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-header-dark {
+            border-bottom: 1px solid var(--border-card);
+            padding: 16px 22px;
+        }
+
+        .modal-footer-dark {
+            border-top: 1px solid var(--border-card);
+            padding: 14px 22px;
+        }
+
+        .radio-option-card {
+            background: #0f172a;
+            border: 1.5px solid var(--border-card);
+            border-radius: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .radio-option-card:hover {
+            border-color: var(--color-primary);
+            background: #172238;
+        }
+
+        .radio-option-card input[type="radio"]:checked + label {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .preset-chip {
+            background: #0f172a;
+            border: 1px solid var(--border-card);
+            color: #94a3b8;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .preset-chip:hover {
+            border-color: var(--color-danger);
+            color: #ffffff;
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        @media (max-width: 992px) {
+            .order-card-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP NAVBAR -->
+    <header class="operator-navbar">
+        <div class="container-fluid px-lg-4 d-flex justify-content-between align-items-center">
+            <div class="brand-logo-box">
+                <img src="{{ url_for('static', filename='club_logo.png') }}" alt="KKU Shooting Club" style="width: 44px; height: 44px; object-fit: contain;">
+                <div>
+                    <h1 class="brand-title-main">KKU SHOOTING CLUB</h1>
+                    <p class="brand-subtitle">แผงควบคุมคณะกรรมการชมรม (Board Console)</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="user-profile-badge">
+                    <img src="{{ url_for('static', filename='profiles/' + (session.get('profile_pic') if session.get('profile_pic') else 'default_avatar.png')) }}" 
+                         alt="Avatar" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover; border: 1.5px solid #f59e0b;"
+                         onerror="this.onerror=null; this.src='/static/profiles/default_avatar.png';">
+                    <div>
+                        <div class="small fw-bold text-white">
+                            {% if session.get('first_name') and session.get('first_name') != session.get('username') %}
+                                {{ session.get('first_name') }} ({{ session.get('username') }})
+                            {% else %}
+                                {{ session.get('username', 'Operator') }}
+                            {% endif %}
+                        </div>
+                        <div style="font-size: 0.72rem; color: #f59e0b; font-weight: 500;">
+                            {{ session.get('position') or 'กรรมการชมรม (BOARD)' }}
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-warning btn-sm fw-bold d-flex align-items-center gap-2 shadow-sm text-dark px-3 py-2" onclick="openRangeScannerModal()">
+                    <i class="bi bi-qr-code-scan"></i>
+                    <span class="d-none d-sm-inline">สแกนบัตรสมาชิก (Range Scanner)</span>
+                    <span class="d-inline d-sm-none">สแกน QR</span>
+                </button>
+
+                {% if session.get('role') == 'god' %}
+                <a href="/god" class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                    <i class="bi bi-key-fill"></i> GOD MODE
+                </a>
+                {% endif %}
+
+                <a href="/logout" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                    <i class="bi bi-box-arrow-right"></i> ออกจากระบบ
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid px-lg-4 py-4">
+
+        <!-- Flash Message Alerts -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for msg in messages %}
+            <div class="alert alert-dismissible fade show d-flex align-items-center gap-2 mb-4 {% if 'ผิดพลาด' in msg or 'ไม่สามารถ' in msg or 'ไม่เพียงพอ' in msg %}bg-danger bg-opacity-95 text-white border border-danger border-opacity-50 shadow-lg{% else %}bg-primary text-white border-0 shadow-sm{% endif %}" role="alert">
+                <i class="bi {% if 'ผิดพลาด' in msg or 'ไม่สามารถ' in msg or 'ไม่เพียงพอ' in msg %}bi-exclamation-octagon-fill fs-4 text-warning{% else %}bi-check-circle-fill fs-5 text-white{% endif %} flex-shrink-0"></i>
+                <div class="flex-grow-1 fw-medium">{{ msg }}</div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- ================= 1. INVENTORY OVERVIEW (5 ITEMS) ================= -->
+        {% set ns = namespace(qty_177=0, qty_22_cci=0, qty_22_rws=0, qty_rifle_tgt=0, qty_pistol_tgt=0) %}
+        {% for item in inventory %}
+            {% if item.ammo_type == '.177' %}
+                {% set ns.qty_177 = item.quantity %}
+            {% elif item.ammo_type == '.22 LR (CCI)' %}
+                {% set ns.qty_22_cci = item.quantity %}
+            {% elif item.ammo_type == '.22 LR (RWS)' %}
+                {% set ns.qty_22_rws = item.quantity %}
+            {% elif item.ammo_type == 'เป้าปืนยาว' or item.ammo_type == 'เป้ากระดาษ' %}
+                {% set ns.qty_rifle_tgt = item.quantity %}
+            {% elif item.ammo_type == 'เป้าปืนสั้น' %}
+                {% set ns.qty_pistol_tgt = item.quantity %}
+            {% endif %}
+        {% endfor %}
+
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">
+                    <i class="bi bi-box-seam text-info"></i> สต็อกคลังกลางของชมรม (5 รายการ)
+                </h2>
+                <span class="text-secondary small">ตรวจสอบยอดคงเหลือ และปรับปรุงจำนวนกระสุนหรือเป้าปืนเข้า-ออก</span>
+            </div>
+        </div>
+
+        <div class="inventory-grid">
+
+            <!-- 1. คลัง .177 -->
+            <div class="inv-card">
+                <div>
+                    <div class="inv-card-header">
+                        <div>
+                            <div class="inv-name">กระสุน .177</div>
+                            <div class="inv-desc">ปืนยาว & ปืนสั้นอัดลม</div>
+                        </div>
+                        {% if ns.qty_177 == 0 %}
+                            <span class="status-pill out"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> หมด</span>
+                        {% elif ns.qty_177 < 300 %}
+                            <span class="status-pill low"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> สต็อกต่ำ</span>
+                        {% else %}
+                            <span class="status-pill normal"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> พร้อมใช้</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="inv-thumb-box">
+                        <img src="{{ url_for('static', filename='ammo_177.png') }}" class="inv-thumb-img" onerror="this.src='https://placehold.co/120x80/151d30/ffffff?text=.177';">
+                    </div>
+
+                    <div class="inv-count-row">
+                        <span class="inv-count-val">{{ "{:,}".format(ns.qty_177) }}</span>
+                        <span class="inv-count-unit">นัด</span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-manage-stock" onclick="openStockModal('.177', 'กระสุน .177 (ปืนยาว/สั้นอัดลม)', 'นัด', {{ ns.qty_177 }})">
+                    <i class="bi bi-sliders"></i> ปรับปรุงสต็อก
+                </button>
+            </div>
+
+            <!-- 2. คลัง .22 LR (CCI) -->
+            <div class="inv-card">
+                <div>
+                    <div class="inv-card-header">
+                        <div>
+                            <div class="inv-name">.22 LR (CCI)</div>
+                            <div class="inv-desc">เกรดมาตรฐาน (ซ้อม)</div>
+                        </div>
+                        {% if ns.qty_22_cci == 0 %}
+                            <span class="status-pill out"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> หมด</span>
+                        {% elif ns.qty_22_cci < 300 %}
+                            <span class="status-pill low"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> สต็อกต่ำ</span>
+                        {% else %}
+                            <span class="status-pill normal"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> พร้อมใช้</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="inv-thumb-box">
+                        <img src="{{ url_for('static', filename='ammo_22_cci.png') }}" class="inv-thumb-img" onerror="this.src='https://placehold.co/120x80/151d30/ffffff?text=.22+CCI';">
+                    </div>
+
+                    <div class="inv-count-row">
+                        <span class="inv-count-val">{{ "{:,}".format(ns.qty_22_cci) }}</span>
+                        <span class="inv-count-unit">นัด</span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-manage-stock" onclick="openStockModal('.22 LR (CCI)', 'กระสุน .22 LR (CCI เกรดซ้อม)', 'นัด', {{ ns.qty_22_cci }})">
+                    <i class="bi bi-sliders"></i> ปรับปรุงสต็อก
+                </button>
+            </div>
+
+            <!-- 3. คลัง .22 LR (RWS) -->
+            <div class="inv-card">
+                <div>
+                    <div class="inv-card-header">
+                        <div>
+                            <div class="inv-name">.22 LR (RWS)</div>
+                            <div class="inv-desc">เกรดพรีเมียม (แข่งขัน)</div>
+                        </div>
+                        {% if ns.qty_22_rws == 0 %}
+                            <span class="status-pill out"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> หมด</span>
+                        {% elif ns.qty_22_rws < 300 %}
+                            <span class="status-pill low"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> สต็อกต่ำ</span>
+                        {% else %}
+                            <span class="status-pill normal"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> พร้อมใช้</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="inv-thumb-box">
+                        <img src="{{ url_for('static', filename='ammo_22_rws.png') }}" class="inv-thumb-img" onerror="this.src='https://placehold.co/120x80/151d30/ffffff?text=.22+RWS';">
+                    </div>
+
+                    <div class="inv-count-row">
+                        <span class="inv-count-val">{{ "{:,}".format(ns.qty_22_rws) }}</span>
+                        <span class="inv-count-unit">นัด</span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-manage-stock" onclick="openStockModal('.22 LR (RWS)', 'กระสุน .22 LR (RWS เกรดแข่ง)', 'นัด', {{ ns.qty_22_rws }})">
+                    <i class="bi bi-sliders"></i> ปรับปรุงสต็อก
+                </button>
+            </div>
+
+            <!-- 4. คลังเป้าปืนยาว -->
+            <div class="inv-card">
+                <div>
+                    <div class="inv-card-header">
+                        <div>
+                            <div class="inv-name">เป้าปืนยาว</div>
+                            <div class="inv-desc">เป้ากระดาษมาตรฐาน</div>
+                        </div>
+                        {% if ns.qty_rifle_tgt == 0 %}
+                            <span class="status-pill out"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> หมด</span>
+                        {% elif ns.qty_rifle_tgt < 300 %}
+                            <span class="status-pill low"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> สต็อกต่ำ</span>
+                        {% else %}
+                            <span class="status-pill normal"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> พร้อมใช้</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="inv-thumb-box">
+                        <img src="{{ url_for('static', filename='target_paper.png') }}" class="inv-thumb-img" onerror="this.src='https://placehold.co/120x80/151d30/ffffff?text=TARGET+RIFLE';">
+                    </div>
+
+                    <div class="inv-count-row">
+                        <span class="inv-count-val">{{ "{:,}".format(ns.qty_rifle_tgt) }}</span>
+                        <span class="inv-count-unit">แผ่น</span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-manage-stock" onclick="openStockModal('เป้าปืนยาว', 'เป้ากระดาษ (ปืนยาว)', 'แผ่น', {{ ns.qty_rifle_tgt }})">
+                    <i class="bi bi-sliders"></i> ปรับปรุงสต็อก
+                </button>
+            </div>
+
+            <!-- 5. คลังเป้าปืนสั้น -->
+            <div class="inv-card">
+                <div>
+                    <div class="inv-card-header">
+                        <div>
+                            <div class="inv-name">เป้าปืนสั้น</div>
+                            <div class="inv-desc">เป้ากระดาษวงดำใหญ่</div>
+                        </div>
+                        {% if ns.qty_pistol_tgt == 0 %}
+                            <span class="status-pill out"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> หมด</span>
+                        {% elif ns.qty_pistol_tgt < 300 %}
+                            <span class="status-pill low"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> สต็อกต่ำ</span>
+                        {% else %}
+                            <span class="status-pill normal"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> พร้อมใช้</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="inv-thumb-box">
+                        <img src="{{ url_for('static', filename='target_paper.png') }}" class="inv-thumb-img" onerror="this.src='https://placehold.co/120x80/151d30/ffffff?text=TARGET+PISTOL';">
+                    </div>
+
+                    <div class="inv-count-row">
+                        <span class="inv-count-val">{{ "{:,}".format(ns.qty_pistol_tgt) }}</span>
+                        <span class="inv-count-unit">แผ่น</span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-manage-stock" onclick="openStockModal('เป้าปืนสั้น', 'เป้ากระดาษ (ปืนสั้น)', 'แผ่น', {{ ns.qty_pistol_tgt }})">
+                    <i class="bi bi-sliders"></i> ปรับปรุงสต็อก
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ================= 2. WORKSPACE TABS ================= -->
+        <div class="workspace-card">
+            
+            <div class="nav-tabs-modern">
+                <button type="button" class="tab-btn-modern {% if pending_orders|length > 0 %}active{% endif %}" id="btnTabPending" onclick="switchMainTab('pending')">
+                    <i class="bi bi-hourglass-split text-warning"></i> รายการรอตรวจสอบสลิป
+                    <span class="pending-count-tag" id="pendingTag">{{ pending_orders|length }}</span>
+                </button>
+                <button type="button" class="tab-btn-modern {% if pending_orders|length == 0 %}active{% endif %}" id="btnTabHistory" onclick="switchMainTab('history')">
+                    <i class="bi bi-clock-history text-info"></i> ประวัติธุรกรรมคลังทั้งหมด
+                </button>
+                <button type="button" class="tab-btn-modern" id="btnTabPastOrders" onclick="switchMainTab('pastOrders')">
+                    <i class="bi bi-receipt-cutoff text-success"></i> ประวัติคำสั่งซื้อสลิป
+                </button>
+            </div>
+
+            <!-- ---------------- PANE 1: รายการรอตรวจสอบสลิป ---------------- -->
+            <div id="panePendingOrders" {% if pending_orders|length == 0 %}style="display: none;"{% endif %}>
+                {% if pending_orders|length > 0 %}
+                    <div class="mb-3 text-secondary small">
+                        <i class="bi bi-info-circle me-1"></i> มีคำสั่งซื้อที่ส่งสลิปรอการตรวจสอบ <strong>{{ pending_orders|length }}</strong> รายการ กรุณาตรวจสอบยอดเงินก่อนกดอนุมัติ
+                    </div>
+
+                    {% for order in pending_orders %}
+                    <div class="order-card-row">
+                        <!-- 1. ข้อมูลสมาชิกและรหัสคำสั่งซื้อ -->
+                        <div class="order-meta-info">
+                            <span class="order-id-title">{{ order.order_no }}</span>
+                            <span class="order-user-name">
+                                {{ order.first_name or '' }} {{ order.last_name or '' }}
+                                <span class="badge bg-secondary font-monospace" style="font-size:0.75rem;">@{{ order.username }}</span>
+                            </span>
+                            <span class="order-user-sub">
+                                <i class="bi bi-card-text me-1"></i>รหัส: <strong>{{ order.student_id or '-' }}</strong>
+                            </span>
+                            <span class="order-user-sub">
+                                <i class="bi bi-telephone me-1"></i>โทร: <strong>{{ order.phone or '-' }}</strong>
+                            </span>
+                            <span style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">
+                                <i class="bi bi-clock me-1"></i>{{ order.created_at }}
+                            </span>
+                        </div>
+
+                        <!-- 2. รายละเอียดสินค้าที่สั่ง -->
+                        <div class="order-items-detail">
+                            <div class="order-summary-text">{{ order.items_summary }}</div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25 mt-1">
+                                <span class="small text-secondary">
+                                    กระสุน: <strong class="text-white">{{ order.total_bullets }}</strong> นัด | 
+                                    เป้า: <strong class="text-white">{{ order.total_targets }}</strong> แผ่น
+                                </span>
+                                <span class="order-price-badge">{{ "{:,}".format(order.total_price) }} ฿</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. หลักฐานสลิป -->
+                        <div class="slip-preview-card">
+                            {% if order.slip_image %}
+                            <div class="slip-thumb-clickable" onclick="showFullSlipModal('{{ url_for('static', filename='slips/' + order.slip_image) }}', '{{ order.order_no }}', '{{ order.first_name }} {{ order.last_name }} (@{{ order.username }})', '{{ order.total_price }}', '{{ order.id }}')">
+                                <img src="{{ url_for('static', filename='slips/' + order.slip_image) }}" alt="Slip Thumbnail">
+                            </div>
+                            <div>
+                                <div class="text-success small fw-medium"><i class="bi bi-check2-circle"></i> แนบสลิปแล้ว</div>
+                                <a class="slip-view-link" onclick="showFullSlipModal('{{ url_for('static', filename='slips/' + order.slip_image) }}', '{{ order.order_no }}', '{{ order.first_name }} {{ order.last_name }} (@{{ order.username }})', '{{ order.total_price }}', '{{ order.id }}')">
+                                    <i class="bi bi-zoom-in"></i> ดูขนาดเต็ม
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="text-warning small">
+                                <i class="bi bi-exclamation-triangle"></i> ไม่ได้แนบสลิป
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 4. ปุ่มการจัดการ -->
+                        <div class="order-actions-box">
+                            <form method="POST" onsubmit="return confirm('ยืนยันอนุมัติคำสั่งซื้อ {{ order.order_no }} ? กระสุนและเป้าจะถูกหักออกจากคลังและโอนเข้ากระเป๋าสมาชิกทันที');">
+                                <input type="hidden" name="action" value="approve_order">
+                                <input type="hidden" name="order_id" value="{{ order.id }}">
+                                <button type="submit" class="btn-modern-approve w-100">
+                                    <i class="bi bi-check-lg"></i> อนุมัติคำสั่งซื้อ
+                                </button>
+                            </form>
+                            
+                            <button type="button" class="btn-modern-reject w-100" onclick="showRejectModal('{{ order.id }}', '{{ order.order_no }}', '{{ order.first_name or order.username }}')">
+                                <i class="bi bi-x-lg"></i> ปฏิเสธคำสั่งซื้อ
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state-box">
+                        <div class="empty-icon-circle">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                        <h4 class="text-white mb-2">ไม่มีสลิปรอตรวจสอบในขณะนี้</h4>
+                        <p class="text-secondary small mb-0">คำสั่งซื้อทั้งหมดได้รับการตรวจสอบและดำเนินการเรียบร้อยแล้ว</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ---------------- PANE 2: ประวัติธุรกรรมคลังทั้งหมด ---------------- -->
+            <div id="paneHistoryLogs" {% if pending_orders|length > 0 %}style="display: none;"{% endif %}>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="table-search-bar">
+                        <i class="bi bi-search table-search-icon"></i>
+                        <input type="text" id="logSearchInput" class="table-search-input" placeholder="พิมพ์เพื่อค้นหาประวัติ..." onkeyup="filterLogTable()">
+                    </div>
+                    <span class="small text-secondary">แสดงรายการเบิก / ซื้อ / ปรับปรุงสต็อกทั้งหมด</span>
+                </div>
+
+                <div class="table-responsive-box">
+                    <table class="modern-table" id="logTable">
+                        <thead>
+                            <tr>
+                                <th>วัน-เวลา</th>
+                                <th>ผู้ใช้งาน / Operator</th>
+                                <th>การทำรายการ</th>
+                                <th>ชนิดกระสุน / เป้า</th>
+                                <th>จำนวน</th>
+                                <th>หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in history %}
+                            <tr>
+                                <td style="font-size:0.85rem; color:#94a3b8; white-space:nowrap;">{{ row.timestamp }}</td>
+                                <td class="fw-medium text-white">{{ row.username }}</td>
+                                <td>
+                                    {% if row.action == 'Buy' %}
+                                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">สั่งซื้อ</span>
+                                    {% elif row.action == 'Withdraw' %}
+                                        <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25">เบิกใช้งาน</span>
+                                    {% elif row.action == 'Return' %}
+                                        <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25">คืนของ</span>
+                                    {% elif row.action == 'Operator_Add' %}
+                                        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">+ เพิ่มคลัง</span>
+                                    {% elif row.action == 'Operator_Sub' %}
+                                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25">- ลดคลัง</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">ปรับคลัง</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ row.ammo_type }}</td>
+                                <td class="fw-bold fs-6 text-white">{{ "{:,}".format(row.amount) }}</td>
+                                <td style="color:#94a3b8; font-size:0.88rem;">{{ row.note or '-' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-secondary">ยังไม่มีข้อมูลประวัติรายการ</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ---------------- PANE 3: ประวัติคำสั่งซื้อสลิป ---------------- -->
+            <div id="panePastOrders" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="small text-secondary">ประวัติคำสั่งซื้อที่ผ่านการอนุมัติหรือปฏิเสธไปแล้ว (50 รายการล่าสุด)</span>
+                </div>
+
+                <div class="table-responsive-box">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>เลขออเดอร์</th>
+                                <th>ผู้สั่งซื้อ</th>
+                                <th>รายการที่สั่ง</th>
+                                <th>ยอดชำระ</th>
+                                <th>สถานะ</th>
+                                <th>ผู้ตรวจสอบ & เวลา</th>
+                                <th>หลักฐานสลิป</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ord in past_orders %}
+                            <tr>
+                                <td style="font-family:'Teko'; font-size:1.15rem; color:#38bdf8; letter-spacing:0.5px;">{{ ord.order_no }}</td>
+                                <td>
+                                    <div class="fw-medium text-white">{{ ord.first_name or ord.username }} {{ ord.last_name or '' }}</div>
+                                    <small class="text-secondary">@{{ ord.username }}</small>
+                                </td>
+                                <td style="font-size:0.88rem; max-width:260px;">{{ ord.items_summary }}</td>
+                                <td class="fw-bold text-warning">{{ "{:,}".format(ord.total_price) }} ฿</td>
+                                <td>
+                                    {% if ord.status == 'approved' %}
+                                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">✓ อนุมัติแล้ว</span>
+                                    {% else %}
+                                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50">✕ ปฏิเสธ</span>
+                                        <div style="font-size: 0.75rem; color: #f87171; margin-top:2px;">{{ ord.reject_reason or '-' }}</div>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:0.82rem; color:#94a3b8;">
+                                    <div>{{ ord.reviewed_by or '-' }}</div>
+                                    <small class="text-muted">{{ ord.reviewed_at or '' }}</small>
+                                </td>
+                                <td>
+                                    {% if ord.slip_image %}
+                                        <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.8rem;" onclick="showFullSlipModal('{{ url_for('static', filename='slips/' + ord.slip_image) }}', '{{ ord.order_no }}', '{{ ord.username }}', '{{ ord.total_price }}', null)">
+                                            <i class="bi bi-image"></i> สลิป
+                                        </button>
+                                    {% else %}
+                                        <span class="text-muted small">ไม่มี</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-secondary">ยังไม่มีประวัติคำสั่งซื้อที่ดำเนินการแล้ว</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= MODAL 1: ปรับปรุงสต็อกคลัง (STOCK ADJUSTMENT) ================= -->
+    <div class="modal fade" id="stockModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-dark">
+                <div class="modal-header modal-header-dark">
+                    <h5 class="modal-title fw-bold" id="stockModalTitle">ปรับปรุงสต็อกสินค้า</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <form method="POST" id="stockModalForm" onsubmit="return validateStockForm();">
+                    <input type="hidden" name="ammo_type" id="modalAmmoType">
+
+                    <div class="modal-body p-4">
+                        <div class="mb-3 p-3 rounded" style="background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.25);">
+                            <div class="small text-secondary">รายการที่กำลังปรับปรุง:</div>
+                            <div class="fw-bold fs-5 text-white" id="modalAmmoNameDisplay">-</div>
+                            <div class="small text-info mt-1">คงเหลือปัจจุบัน: <strong id="modalCurrentQtyDisplay">0</strong> <span id="modalCurrentUnitDisplay">นัด</span></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary fw-semibold">เลือกการดำเนินการ:</label>
+                            <div class="d-flex flex-column gap-2">
+                                <label class="radio-option-card">
+                                    <input type="radio" name="action" value="add_inventory" checked class="form-check-input mt-0" id="radioAdd">
+                                    <label class="form-check-label text-success fw-medium mb-0" for="radioAdd">
+                                        <i class="bi bi-plus-circle me-1"></i> เพิ่มเข้าคลัง (นำเข้าสินค้าใหม่)
+                                    </label>
+                                </label>
+                                <label class="radio-option-card">
+                                    <input type="radio" name="action" value="sub_inventory" class="form-check-input mt-0" id="radioSub">
+                                    <label class="form-check-label text-warning fw-medium mb-0" for="radioSub">
+                                        <i class="bi bi-dash-circle me-1"></i> ลดออกจากคลัง (ตัดสต็อกเสียหาย / อื่นๆ)
+                                    </label>
+                                </label>
+                                <label class="radio-option-card">
+                                    <input type="radio" name="action" value="set_inventory" class="form-check-input mt-0" id="radioSet">
+                                    <label class="form-check-label text-info fw-medium mb-0" for="radioSet">
+                                        <i class="bi bi-check2-square me-1"></i> ปรับยอดคงเหลือเป็น (นับสต็อกจริงใหม่)
+                                    </label>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary fw-semibold">จำนวน (<span id="modalUnitLabel">นัด</span>):</label>
+                            <input type="number" name="amount" id="modalStockAmount" class="form-control bg-dark text-white border-secondary fs-5 text-center fw-bold" placeholder="ระบุจำนวน" min="1" required autocomplete="off" oninput="checkStockInput();">
+                            <div id="stockWarningNotice" class="text-danger small mt-2 fw-medium align-items-center gap-1" style="display: none;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span id="stockWarningNoticeText"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label small text-secondary fw-semibold">หมายเหตุ / เหตุผลการปรับปรุง:</label>
+                            <input type="text" name="note" class="form-control bg-dark text-white border-secondary" placeholder="เช่น สั่งซื้อลอตใหม่, นับสต็อกประจำสัปดาห์" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer modal-footer-dark">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                        <button type="submit" class="btn btn-primary fw-medium px-4">ยืนยันบันทึกสต็อก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL 2: ตรวจสอบสลิปขนาดเต็ม (SLIP LIGHTBOX) ================= -->
+    <div class="modal fade" id="slipModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-dark">
+                <div class="modal-header modal-header-dark">
+                    <div>
+                        <h5 class="modal-title fw-bold text-info" id="lbSlipTitle">ตรวจสอบหลักฐานการชำระเงิน</h5>
+                        <div class="small text-secondary" id="lbSlipMeta"></div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body p-3 text-center" style="background:#000; min-height: 300px; max-height: 65vh; overflow:auto;">
+                    <img id="lbModalImg" src="" style="max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 4px;" alt="Slip Full Preview">
+                </div>
+
+                <div class="modal-footer modal-footer-dark justify-content-between" id="lbModalFooter">
+                    <div>
+                        <span class="small text-secondary">กรุณาตรวจสอบยอดเงินและเวลาในสลิปให้ตรงกับคำสั่งซื้อ</span>
+                    </div>
+                    <div class="d-flex gap-2" id="lbModalActionBtns">
+                        <form method="POST" id="lbApproveForm" onsubmit="return confirm('ยืนยันอนุมัติคำสั่งซื้อนี้?');">
+                            <input type="hidden" name="action" value="approve_order">
+                            <input type="hidden" name="order_id" id="lbOrderIdField">
+                            <button type="submit" class="btn btn-success fw-medium">
+                                <i class="bi bi-check-lg"></i> อนุมัติสลิปนี้
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-outline-danger" id="lbRejectBtn">
+                            <i class="bi bi-x-lg"></i> ปฏิเสธ
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL 3: ปฏิเสธคำสั่งซื้อ (REJECT ORDER) ================= -->
+    <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-dark">
+                <div class="modal-header modal-header-dark">
+                    <h5 class="modal-title fw-bold text-danger">
+                        <i class="bi bi-exclamation-octagon me-1"></i> ปฏิเสธคำสั่งซื้อ
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form method="POST">
+                    <input type="hidden" name="action" value="reject_order">
+                    <input type="hidden" name="order_id" id="rejectModalOrderId">
+
+                    <div class="modal-body p-4">
+                        <div class="mb-3 p-3 rounded" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25);">
+                            <div class="small text-secondary">คำสั่งซื้อ:</div>
+                            <div class="fw-bold text-warning" id="rejectModalOrderNo">-</div>
+                            <div class="small text-muted" id="rejectModalMemberName">-</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary fw-semibold">เลือกเหตุผลด่วน:</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="preset-chip" onclick="setRejectPreset('ยอดเงินในสลิปไม่ตรงกับยอดสั่งซื้อ')">ยอดไม่ตรง</button>
+                                <button type="button" class="preset-chip" onclick="setRejectPreset('สลิปซ้ำ / เคยถูกใช้งานไปแล้ว')">สลิปซ้ำ</button>
+                                <button type="button" class="preset-chip" onclick="setRejectPreset('ภาพสลิปไม่ชัดเจน ตรวจสอบวันเวลาและยอดเงินไม่ได้')">ภาพไม่ชัด</button>
+                                <button type="button" class="preset-chip" onclick="setRejectPreset('ไม่พบยอดเงินเข้าบัญชีชมรม')">ไม่พบยอดเงิน</button>
+                                <button type="button" class="preset-chip" onclick="setRejectPreset('ไม่ใช่สลิปหลักฐานการโอนเงิน')">ไม่ใช่สลิป</button>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label small text-secondary fw-semibold">ระบุเหตุผลการปฏิเสธ (สมาชิกจะเห็นข้อความนี้):</label>
+                            <textarea name="reject_reason" id="rejectReasonInput" rows="3" class="form-control bg-dark text-white border-secondary" placeholder="พิมพ์เหตุผลที่ปฏิเสธ..." required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer modal-footer-dark">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                        <button type="submit" class="btn btn-danger fw-medium px-4">ยืนยันปฏิเสธคำสั่งซื้อ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL 4: เคาน์เตอร์เบิกกระสุน & สแกนเนอร์ (RANGE SCANNER & CHECK-IN) ================= -->
+    <div class="modal fade" id="rangeScannerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-dark" style="background: #0d1424; border: 1.5px solid rgba(245, 158, 11, 0.4); box-shadow: 0 10px 40px rgba(0,0,0,0.85);">
+                <div class="modal-header modal-header-dark border-secondary">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-qr-code-scan text-warning fs-4"></i>
+                        <div>
+                            <h5 class="modal-title fw-bold text-white mb-0">เคาน์เตอร์เบิกกระสุนสนามยิงปืน (Range Check-in & Scanner)</h5>
+                            <div class="small text-secondary">สแกน QR บัตรสมาชิก หรือค้นหาด้วยรหัสนักศึกษาเพื่อเบิกจ่ายกระสุนหน้าสนาม</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="stopCameraScanner()"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <!-- Scanner Mode Switch -->
+                    <div class="d-flex gap-2 mb-3">
+                        <button type="button" class="btn btn-outline-info active flex-fill py-2 fw-semibold" id="btnModeCamera" onclick="switchScannerMode('camera')">
+                            <i class="bi bi-camera-fill me-1"></i> กล้องสแกน QR (Live Camera)
+                        </button>
+                        <button type="button" class="btn btn-outline-info flex-fill py-2 fw-semibold" id="btnModeManual" onclick="switchScannerMode('manual')">
+                            <i class="bi bi-keyboard-fill me-1"></i> ปืนยิงบาร์โค้ด / พิมพ์ค้นหา
+                        </button>
+                    </div>
+
+                    <!-- Camera Viewfinder -->
+                    <div id="cameraScannerArea" style="display: block;">
+                        <div id="reader" style="width: 100%; max-width: 420px; margin: 0 auto; min-height: 250px; background: #000000; border-radius: 12px; overflow: hidden; border: 2px dashed #f59e0b;"></div>
+                        <div class="text-center small text-secondary mt-2">
+                            <i class="bi bi-info-circle me-1"></i> เล็งกล้องไปที่ QR Code บนหน้าจอมือถือของสมาชิก
+                        </div>
+                    </div>
+
+                    <!-- Manual Search Input -->
+                    <div id="manualSearchArea" style="display: none;">
+                        <div class="input-group mb-2">
+                            <span class="input-group-text bg-dark text-warning border-secondary"><i class="bi bi-search"></i></span>
+                            <input type="text" id="manualSearchInput" class="form-control form-control-lg bg-dark text-white border-secondary" placeholder="ยิงบาร์โค้ด หรือพิมพ์รหัสนักศึกษา / Username..." autocomplete="off" onkeydown="if(event.key==='Enter') executeMemberLookup(this.value)">
+                            <button class="btn btn-primary px-4 fw-bold" onclick="executeMemberLookup(document.getElementById('manualSearchInput').value)">
+                                ค้นหา
+                            </button>
+                        </div>
+                        <div class="small text-secondary">ตัวอย่าง: รหัสนักศึกษา เช่น 653040xxx-x หรือชื่อผู้ใช้ เช่น member1</div>
+                    </div>
+
+                    <!-- Loading Spinner -->
+                    <div id="scannerLoading" class="text-center py-4" style="display: none;">
+                        <div class="spinner-border text-warning" role="status"></div>
+                        <div class="text-secondary small mt-2">กำลังดึงข้อมูลสมาชิกและกระเป๋ากระสุน...</div>
+                    </div>
+
+                    <!-- Member Found Result & Quick Dispense Pane -->
+                    <div id="memberFoundPane" class="mt-4" style="display: none;">
+                        <div class="p-3 rounded mb-3" style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #2563eb;">
+                            <div class="d-flex align-items-center gap-3">
+                                <img id="foundMemberAvatar" src="" class="rounded-circle border border-warning" style="width: 58px; height: 58px; object-fit: cover;" onerror="this.onerror=null; this.src='/static/profiles/default_avatar.png';">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h5 class="fw-bold text-white mb-0" id="foundMemberName">-</h5>
+                                        <span class="badge bg-success" id="foundMemberStatus">ACTIVE</span>
+                                    </div>
+                                    <div class="small text-warning fw-bold mt-1" id="foundMemberStdId">-</div>
+                                    <div class="small text-secondary" id="foundMemberFaculty">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Member Wallet Details -->
+                        <h6 class="fw-bold text-info mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-briefcase-fill"></i> กระเป๋ากระสุนของสมาชิก (พร้อมเบิกซ้อม)
+                        </h6>
+
+                        <div id="foundMemberWalletList" class="d-flex flex-column gap-2 mb-3">
+                            <!-- Injected by JS -->
+                        </div>
+
+                        <!-- Dispense Action Panel -->
+                        <div class="p-3 rounded border border-warning" style="background: rgba(245, 158, 11, 0.08);">
+                            <div class="fw-bold text-warning mb-2">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> เบิกกระสุนลงช่องยิงหน้าสนาม
+                            </div>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="small text-secondary fw-semibold">เลือกพัสดุที่จะเบิก:</label>
+                                    <select id="dispenseAmmoSelect" class="form-select bg-dark text-white border-secondary">
+                                        <!-- Injected by JS -->
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="small text-secondary fw-semibold">จำนวนที่จะเบิก:</label>
+                                    <input type="number" id="dispenseAmountInput" class="form-control bg-dark text-white border-secondary text-center fw-bold" min="1" placeholder="จำนวน" value="50">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="small text-secondary fw-semibold">ช่องยิง:</label>
+                                    <select id="dispenseLaneSelect" class="form-select bg-dark text-white border-secondary">
+                                        <option value="ช่องยิงที่ 1">ช่องยิง 1</option>
+                                        <option value="ช่องยิงที่ 2">ช่องยิง 2</option>
+                                        <option value="ช่องยิงที่ 3">ช่องยิง 3</option>
+                                        <option value="ช่องยิงที่ 4">ช่องยิง 4</option>
+                                        <option value="ช่องยิงที่ 5">ช่องยิง 5</option>
+                                        <option value="ช่องยิงที่ 6">ช่องยิง 6</option>
+                                        <option value="ช่องยิงที่ 7">ช่องยิง 7</option>
+                                        <option value="ช่องยิงที่ 8">ช่องยิง 8</option>
+                                        <option value="ช่องยิงที่ 9">ช่องยิง 9</option>
+                                        <option value="ช่องยิงที่ 10">ช่องยิง 10</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Quick preset buttons -->
+                            <div class="d-flex gap-2 mt-2 flex-wrap">
+                                <span class="small text-muted align-self-center">ทางลัด:</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('dispenseAmountInput').value=25">25 นัด</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('dispenseAmountInput').value=50">50 นัด</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('dispenseAmountInput').value=100">100 นัด</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('dispenseAmountInput').value=1">1 แผ่น</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('dispenseAmountInput').value=5">5 แผ่น</button>
+                            </div>
+
+                            <button type="button" class="btn btn-success w-100 mt-3 fw-bold py-2 shadow" onclick="submitQuickRangeWithdraw()">
+                                <i class="bi bi-check-circle-fill me-1"></i> ยืนยันเบิกจ่ายกระสุนให้สมาชิก
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer modal-footer-dark border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" onclick="stopCameraScanner()">ปิดหน้าต่าง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ---------------- 1. สลับแท็บ ----------------
+        function switchMainTab(tab) {
+            const btnPending = document.getElementById('btnTabPending');
+            const btnHistory = document.getElementById('btnTabHistory');
+            const btnPastOrders = document.getElementById('btnTabPastOrders');
+
+            const panePending = document.getElementById('panePendingOrders');
+            const paneHistory = document.getElementById('paneHistoryLogs');
+            const panePastOrders = document.getElementById('panePastOrders');
+
+            btnPending.classList.remove('active');
+            btnHistory.classList.remove('active');
+            btnPastOrders.classList.remove('active');
+
+            panePending.style.display = 'none';
+            paneHistory.style.display = 'none';
+            panePastOrders.style.display = 'none';
+
+            if (tab === 'pending') {
+                btnPending.classList.add('active');
+                panePending.style.display = 'block';
+            } else if (tab === 'history') {
+                btnHistory.classList.add('active');
+                paneHistory.style.display = 'block';
+            } else if (tab === 'pastOrders') {
+                btnPastOrders.classList.add('active');
+                panePastOrders.style.display = 'block';
+            }
+        }
+
+        // ---------------- 2. MODAL ปรับปรุงสต็อก ----------------
+        const stockModal = new bootstrap.Modal(document.getElementById('stockModal'));
+        let currentModalQty = 0;
+        let currentModalUnit = 'นัด';
+
+        function openStockModal(ammoType, displayName, unit, currentQty) {
+            currentModalQty = currentQty;
+            currentModalUnit = unit;
+
+            document.getElementById('modalAmmoType').value = ammoType;
+            document.getElementById('modalAmmoNameDisplay').innerText = displayName;
+            document.getElementById('modalCurrentQtyDisplay').innerText = currentQty.toLocaleString();
+            document.getElementById('modalCurrentUnitDisplay').innerText = unit;
+            document.getElementById('modalUnitLabel').innerText = unit;
+            document.getElementById('modalStockAmount').value = '';
+            document.getElementById('modalStockAmount').placeholder = `ระบุจำนวน (${unit})`;
+            document.getElementById('radioAdd').checked = true;
+
+            hideStockWarning();
+            updateStockInputConstraints();
+
+            stockModal.show();
+            setTimeout(() => {
+                document.getElementById('modalStockAmount').focus();
+            }, 300);
+        }
+
+        function updateStockInputConstraints() {
+            const isSub = document.getElementById('radioSub').checked;
+            const amountInput = document.getElementById('modalStockAmount');
+            if (isSub) {
+                amountInput.max = currentModalQty;
+            } else {
+                amountInput.removeAttribute('max');
+            }
+            checkStockInput();
+        }
+
+        function checkStockInput() {
+            const isSub = document.getElementById('radioSub').checked;
+            const amountInput = document.getElementById('modalStockAmount');
+            const val = parseInt(amountInput.value) || 0;
+            const warningEl = document.getElementById('stockWarningNotice');
+            const warningText = document.getElementById('stockWarningNoticeText');
+
+            if (isSub && val > currentModalQty) {
+                warningText.innerText = `ไม่สามารถลดเกินสต็อกที่มีได้! ในคลังมีเพียง ${currentModalQty.toLocaleString()} ${currentModalUnit}`;
+                warningEl.style.display = 'flex';
+                amountInput.classList.add('is-invalid');
+            } else {
+                hideStockWarning();
+            }
+        }
+
+        function hideStockWarning() {
+            const warningEl = document.getElementById('stockWarningNotice');
+            const amountInput = document.getElementById('modalStockAmount');
+            if (warningEl) warningEl.style.display = 'none';
+            if (amountInput) amountInput.classList.remove('is-invalid');
+        }
+
+        function validateStockForm() {
+            const isSub = document.getElementById('radioSub').checked;
+            const isSet = document.getElementById('radioSet').checked;
+            const amountInput = document.getElementById('modalStockAmount');
+            const amount = parseInt(amountInput.value) || 0;
+
+            if (!isSet && amount <= 0) {
+                alert('กรุณาระบุจำนวนที่มากกว่า 0');
+                amountInput.focus();
+                return false;
+            }
+
+            if (isSet && amount < 0) {
+                alert('ยอดคงเหลือต้องไม่ติดลบ');
+                amountInput.focus();
+                return false;
+            }
+
+            if (isSub && amount > currentModalQty) {
+                alert(`⚠️ ผิดพลาด: ไม่สามารถสั่งลด ${amount.toLocaleString()} ${currentModalUnit} ได้!\nเนื่องจากในคลังมีคงเหลือเพียง ${currentModalQty.toLocaleString()} ${currentModalUnit}`);
+                amountInput.focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        document.querySelectorAll('input[name="action"]').forEach(radio => {
+            radio.addEventListener('change', updateStockInputConstraints);
+        });
+
+        // ---------------- 3. MODAL ตรวจสอบสลิปขนาดเต็ม ----------------
+        const slipModal = new bootstrap.Modal(document.getElementById('slipModal'));
+        function showFullSlipModal(imgUrl, orderNo, userText, priceText, orderId) {
+            document.getElementById('lbModalImg').src = imgUrl;
+            document.getElementById('lbSlipTitle').innerText = 'ตรวจสอบสลิป: ' + orderNo;
+            document.getElementById('lbSlipMeta').innerHTML = `ผู้สั่งซื้อ: <strong>${userText}</strong> | ยอดชำระ: <strong class="text-warning">${parseInt(priceText).toLocaleString()} บาท</strong>`;
+
+            const actionBtns = document.getElementById('lbModalActionBtns');
+            const approveForm = document.getElementById('lbApproveForm');
+            const rejectBtn = document.getElementById('lbRejectBtn');
+
+            if (orderId) {
+                document.getElementById('lbOrderIdField').value = orderId;
+                approveForm.style.display = 'block';
+                rejectBtn.style.display = 'block';
+                rejectBtn.onclick = function() {
+                    slipModal.hide();
+                    showRejectModal(orderId, orderNo, userText);
+                };
+            } else {
+                approveForm.style.display = 'none';
+                rejectBtn.style.display = 'none';
+            }
+
+            slipModal.show();
+        }
+
+        // ---------------- 4. MODAL ปฏิเสธคำสั่งซื้อ ----------------
+        const rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+        function showRejectModal(orderId, orderNo, memberName) {
+            document.getElementById('rejectModalOrderId').value = orderId;
+            document.getElementById('rejectModalOrderNo').innerText = 'เลขออเดอร์: ' + orderNo;
+            document.getElementById('rejectModalMemberName').innerText = 'สมาชิก: ' + memberName;
+            document.getElementById('rejectReasonInput').value = '';
+
+            rejectModal.show();
+            setTimeout(() => {
+                document.getElementById('rejectReasonInput').focus();
+            }, 300);
+        }
+
+        function setRejectPreset(text) {
+            document.getElementById('rejectReasonInput').value = text;
+        }
+
+        // ---------------- 5. ค้นหาในตารางประวัติธุรกรรม ----------------
+        function filterLogTable() {
+            const input = document.getElementById('logSearchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('logTable');
+            const tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                const tdText = tr[i].textContent || tr[i].innerText;
+                if (tdText.toLowerCase().indexOf(filter) > -1) {
+                    tr[i].style.display = '';
+                } else {
+                    tr[i].style.display = 'none';
+                }
+            }
+        }
+
+        // ---------------- 6. RANGE CHECK-IN & QR SCANNER ----------------
+        let rangeScannerModalInstance = null;
+        let html5QrScanner = null;
+        let currentScannedMember = null;
+
+        function openRangeScannerModal() {
+            if (!rangeScannerModalInstance) {
+                rangeScannerModalInstance = new bootstrap.Modal(document.getElementById('rangeScannerModal'));
+            }
+            rangeScannerModalInstance.show();
+            switchScannerMode('camera');
+        }
+
+        function switchScannerMode(mode) {
+            const btnCam = document.getElementById('btnModeCamera');
+            const btnMan = document.getElementById('btnModeManual');
+            const areaCam = document.getElementById('cameraScannerArea');
+            const areaMan = document.getElementById('manualSearchArea');
+
+            if (mode === 'camera') {
+                btnCam.classList.add('active');
+                btnMan.classList.remove('active');
+                areaCam.style.display = 'block';
+                areaMan.style.display = 'none';
+                startCameraScanner();
+            } else {
+                btnMan.classList.add('active');
+                btnCam.classList.remove('active');
+                areaCam.style.display = 'none';
+                areaMan.style.display = 'block';
+                stopCameraScanner();
+                setTimeout(() => document.getElementById('manualSearchInput').focus(), 300);
+            }
+        }
+
+        function startCameraScanner() {
+            if (html5QrScanner) {
+                return;
+            }
+            if (typeof Html5Qrcode === 'undefined') {
+                console.log('Html5Qrcode not loaded, fallback to manual');
+                switchScannerMode('manual');
+                return;
+            }
+
+            try {
+                html5QrScanner = new Html5Qrcode("reader");
+                const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+                html5QrScanner.start({ facingMode: "environment" }, config, onQrCodeSuccess, onQrCodeError)
+                    .catch(err => {
+                        console.log("Rear camera failed, trying front/default camera:", err);
+                        html5QrScanner.start({ facingMode: "user" }, config, onQrCodeSuccess, onQrCodeError)
+                            .catch(e => {
+                                document.getElementById('reader').innerHTML = `
+                                    <div class="p-4 text-center text-secondary">
+                                        <i class="bi bi-camera-video-off fs-2 mb-2 text-warning d-block"></i>
+                                        ไม่สามารถเปิดกล้องได้ หรือยังไม่ได้รับอนุญาตให้ใช้กล้อง<br>
+                                        <button type="button" class="btn btn-sm btn-outline-info mt-3" onclick="switchScannerMode('manual')">
+                                            <i class="bi bi-keyboard me-1"></i> ใช้โหมดยิงบาร์โค้ด / พิมพ์ค้นหาแทน
+                                        </button>
+                                    </div>
+                                `;
+                            });
+                    });
+            } catch (err) {
+                console.log('Camera error:', err);
+            }
+        }
+
+        function stopCameraScanner() {
+            if (html5QrScanner) {
+                html5QrScanner.stop().then(() => {
+                    html5QrScanner.clear();
+                    html5QrScanner = null;
+                }).catch(err => {
+                    html5QrScanner = null;
+                });
+            }
+        }
+
+        function onQrCodeSuccess(decodedText) {
+            if (navigator.vibrate) navigator.vibrate(100);
+            stopCameraScanner();
+            executeMemberLookup(decodedText);
+        }
+
+        function onQrCodeError(error) {
+            // Ignore non-matching video frames
+        }
+
+        function executeMemberLookup(query) {
+            if (!query || !query.trim()) return;
+
+            document.getElementById('scannerLoading').style.display = 'block';
+            document.getElementById('memberFoundPane').style.display = 'none';
+
+            fetch('/api/member_lookup?query=' + encodeURIComponent(query.trim()))
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('scannerLoading').style.display = 'none';
+                    if (data.success && data.member) {
+                        renderScannedMember(data.member);
+                    } else {
+                        alert(data.message || 'ไม่พบสมาชิกตามรหัสนี้');
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('scannerLoading').style.display = 'none';
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+                });
+        }
+
+        function renderScannedMember(m) {
+            currentScannedMember = m;
+            document.getElementById('memberFoundPane').style.display = 'block';
+            document.getElementById('foundMemberName').innerText = m.full_name;
+            document.getElementById('foundMemberStdId').innerText = 'รหัสนักศึกษา: ' + m.student_id;
+            document.getElementById('foundMemberFaculty').innerText = m.faculty + ' (ปี ' + m.academic_year + ') | ' + m.kku_mail;
+            document.getElementById('foundMemberAvatar').src = '/static/profiles/' + m.profile_pic;
+
+            const walletList = document.getElementById('foundMemberWalletList');
+            const ammoSelect = document.getElementById('dispenseAmmoSelect');
+            walletList.innerHTML = '';
+            ammoSelect.innerHTML = '';
+
+            if (m.wallet && m.wallet.length > 0) {
+                m.wallet.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'd-flex justify-content-between align-items-center p-2 rounded bg-dark border border-secondary';
+                    const unit = item.ammo_type.includes('เป้า') ? 'แผ่น' : 'นัด';
+                    const onLaneQty = (m.on_lane && m.on_lane[item.ammo_type]) ? m.on_lane[item.ammo_type] : 0;
+                    const laneText = onLaneQty > 0 ? `<span class="badge bg-warning text-dark ms-2">ซ้อมในช่อง ${onLaneQty} ${unit}</span>` : '';
+
+                    row.innerHTML = `
+                        <div>
+                            <span class="text-white fw-medium">${item.ammo_type}</span>
+                            ${laneText}
+                        </div>
+                        <span class="badge bg-info fs-6">${item.quantity.toLocaleString()} ${unit}</span>
+                    `;
+                    walletList.appendChild(row);
+
+                    if (item.quantity > 0) {
+                        const opt = document.createElement('option');
+                        opt.value = item.ammo_type;
+                        opt.text = `${item.ammo_type} (มี ${item.quantity.toLocaleString()} ${unit})`;
+                        ammoSelect.appendChild(opt);
+                    }
+                });
+            } else {
+                walletList.innerHTML = '<div class="text-muted small text-center py-2">สมาชิกยังไม่มีกระสุนหรือเป้าในกระเป๋า</div>';
+            }
+        }
+
+        function submitQuickRangeWithdraw() {
+            if (!currentScannedMember) return;
+            const ammoType = document.getElementById('dispenseAmmoSelect').value;
+            const amount = parseInt(document.getElementById('dispenseAmountInput').value) || 0;
+            const laneNo = document.getElementById('dispenseLaneSelect').value;
+
+            if (!ammoType) {
+                alert('กรุณาเลือกพัสดุที่จะเบิก');
+                return;
+            }
+            if (amount <= 0) {
+                alert('กรุณาระบุจำนวนที่มากกว่า 0');
+                return;
+            }
+
+            if (!confirm(`ยืนยันเบิก ${ammoType} จำนวน ${amount.toLocaleString()} ให้ ${currentScannedMember.full_name} (${laneNo})?`)) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('member_id', currentScannedMember.id);
+            formData.append('ammo_type', ammoType);
+            formData.append('amount', amount);
+            formData.append('lane_no', laneNo);
+
+            fetch('/api/range_quick_withdraw', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    executeMemberLookup(String(currentScannedMember.id));
+                } else {
+                    alert('⚠️ ' + data.message);
+                }
+            })
+            .catch(err => {
+                alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            });
+        }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg note:', err));
+            });
+        }
+    </script>
+</body>
+</html>

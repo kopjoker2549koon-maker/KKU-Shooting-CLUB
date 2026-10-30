@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>CHARACTER SELECT - Shooting Club</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        /*  เอฟเฟกต์ Transition ตอนเข้าและออกหน้าเว็บ  */
+        body {
+            opacity: 0; 
+            animation: pageFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        body.page-fade-out {
+            opacity: 0;
+            transform: scale(0.98);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: scale(1.02); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        body {
+            background-color: #020202; color: #fff;
+            margin: 0; height: 100vh; overflow: hidden;
+            font-family: 'Kanit', sans-serif; user-select: none;
+        }
+
+        .bg-video {
+            position: absolute; top: 0; left: -5vw; 
+            width: 110vw; height: 100vh;
+            object-fit: cover; z-index: 0;
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.25, 1);
+            filter: brightness(0.4);
+        }
+
+        .models-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+        
+        .char-model {
+            position: absolute; 
+            object-fit: contain;
+            transition: left 0.8s cubic-bezier(0.25, 1, 0.25, 1), transform 0.8s cubic-bezier(0.25, 1, 0.25, 1), filter 0.8s ease, opacity 0.5s ease;
+            height: 110vh;
+        }
+
+        #charMember { bottom: -5vh; left: -15vw; transform-origin: bottom center; }
+        #charOperator { bottom: -5vh; left: 5vw; transform-origin: bottom center; }
+
+        .char-model.active {
+            z-index: 3; opacity: 1;
+            filter: brightness(1.05) drop-shadow(0 0 30px rgba(0,0,0,0.9));
+            transform: scale(1.05);
+        }
+
+        .char-model.inactive {
+            z-index: 1; opacity: 1;
+            filter: brightness(0.15) blur(5px);
+            transform: scale(0.95);
+        }
+
+        #charMember.selected-focus {
+            left: -2vw !important; z-index: 5 !important; opacity: 1 !important;
+            animation: charSelectedGlitch 3.8s infinite ease-in-out !important;
+        }
+
+        #charOperator.selected-focus {
+            left: -18vw !important; z-index: 5 !important; opacity: 1 !important;
+            animation: charSelectedGlitch 3.8s infinite ease-in-out !important;
+        }
+
+        @keyframes charSelectedGlitch {
+            0% { transform: scale(1.05); filter: brightness(1.15) drop-shadow(0 0 25px rgba(74, 144, 226, 0.8)); }
+            6% { transform: scale(1.13) translate(-5px, 2px) skewX(2deg); filter: brightness(1.7) contrast(1.3) drop-shadow(-3px 0 0 rgba(255,30,60,0.7)) drop-shadow(3px 0 0 rgba(0,255,255,0.7)); }
+            12% { transform: scale(1.07) translate(3px, -2px) skewX(-1deg); filter: brightness(1.2) hue-rotate(25deg); }
+            18% { transform: scale(1.06); filter: brightness(1.1) contrast(1.05) drop-shadow(0 0 35px rgba(74, 144, 226, 0.7)); }
+            88% { transform: scale(1.06); filter: brightness(1.1) contrast(1.05) drop-shadow(0 0 35px rgba(74, 144, 226, 0.7)); }
+            90% { transform: scale(1.06) translate(-3px, 1px) skewX(1deg); filter: brightness(1.25) contrast(1.15) drop-shadow(-2px 0 0 rgba(255,0,0,0.6)) drop-shadow(2px 0 0 rgba(0,255,255,0.6)); }
+            92% { transform: scale(1.06) translate(2px, -1px); filter: brightness(1.15) hue-rotate(15deg); }
+            94% { transform: scale(1.06); filter: brightness(1.1) contrast(1.05) drop-shadow(0 0 35px rgba(74, 144, 226, 0.7)); }
+            100% { transform: scale(1.06); filter: brightness(1.1) contrast(1.05) drop-shadow(0 0 35px rgba(74, 144, 226, 0.7)); }
+        }
+
+        .char-model.fade-out {
+            z-index: 0 !important; opacity: 0 !important;
+            filter: brightness(0) blur(12px) !important;
+            transform: scale(0.85) translateY(25px) !important;
+            transition: all 0.45s ease-out !important;
+        }
+
+        .vignette {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(20, 25, 40, 0) 0%, rgba(0, 0, 0, 0.95) 100%);
+            z-index: 4; pointer-events: none; transition: background 0.5s;
+        }
+
+        .scanlines {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px; z-index: 5; pointer-events: none; opacity: 0.5;
+        }
+
+        .screen-glitch-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 8; opacity: 0;
+            background: rgba(74, 144, 226, 0.2); mix-blend-mode: overlay;
+        }
+        .screen-glitch-active { animation: screenShock 0.4s ease-out forwards; }
+        @keyframes screenShock {
+            0% { opacity: 0.9; transform: scale(1.03) translate(-8px, 4px); filter: invert(0.3); }
+            20% { opacity: 0.7; transform: scale(0.98) translate(10px, -6px) skewX(3deg); }
+            50% { opacity: 0.5; transform: scale(1.01) translate(-4px, 2px); }
+            100% { opacity: 0; transform: scale(1) translate(0, 0); filter: none; }
+        }
+
+        #godBg {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            object-fit: cover; z-index: 6; opacity: 0; pointer-events: none;
+            transition: opacity 0.1s;
+        }
+
+        body.god-mode #godBg { opacity: 1; animation: godBgGlitch 4s infinite; }
+        body.god-mode .models-container, body.god-mode .bg-video { display: none; }
+        body.god-mode .vignette { background: radial-gradient(circle at 50% 50%, rgba(100, 0, 0, 0.4) 0%, rgba(10, 0, 0, 1) 100%); }
+        body.god-mode .scanlines {
+            z-index: 7; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.5) 50%);
+            background-size: 100% 6px; opacity: 0.8; animation: scrollScanlines 8s linear infinite, crtFlicker 0.15s infinite;
+        }
+
+        @keyframes scrollScanlines { 0% { background-position: 0 0; } 100% { background-position: 0 100vh; } }
+        @keyframes crtFlicker { 0%, 100% { opacity: 0.7; } 50% { opacity: 0.9; } }
+        @keyframes godBgGlitch {
+            0%, 3%, 45%, 48%, 100% { filter: none; transform: scale(1.1) translate(0, 0); }
+            1% { filter: invert(20%) hue-rotate(90deg); transform: scale(1.1) translate(-10px, 10px) skewX(2deg); }
+            2% { filter: none; transform: scale(1.1) translate(10px, -5px) skewX(-2deg); }
+            46% { filter: contrast(150%) brightness(1.2); transform: scale(1.1) translate(15px, 0) skewX(5deg); }
+            47% { filter: none; transform: scale(1.1) translate(-10px, 5px) skewX(-5deg); }
+        }
+
+        .flash-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: white; z-index: 9999; opacity: 0; pointer-events: none; }
+        .flash-active { animation: violentFlash 0.8s ease-out forwards; }
+        @keyframes violentFlash { 0% { opacity: 1; background-color: white; } 30% { opacity: 0.8; background-color: red; } 100% { opacity: 0; } }
+
+        .character-select-area { position: absolute; right: 12%; top: 40%; z-index: 10; transition: opacity 0.3s; }
+        .char-title { font-family: 'Teko', sans-serif; font-size: 1.5rem; letter-spacing: 5px; color: #8899aa; margin-bottom: 20px; text-transform: uppercase; transition: color 0.5s;}
+        body.god-mode .char-title { color: #ff3333; text-shadow: 0 0 10px #ff0000; }
+        
+        .menu-list { list-style: none; padding: 0; margin: 0; }
+        .menu-item { font-family: 'Teko', sans-serif; font-size: 3.5rem; line-height: 1.2; color: #445566; letter-spacing: 4px; cursor: pointer; transition: all 0.2s ease; position: relative; }
+        .menu-item.active { color: #ffffff; text-shadow: 0 0 15px #4a90e2, 0 0 30px #4a90e2; transform: translateX(-10px); }
+        .menu-item.active::before { content: ""; position: absolute; left: -40px; top: 50%; transform: translateY(-50%); width: 150px; height: 50px; background: radial-gradient(ellipse at center, rgba(74, 144, 226, 0.2) 0%, transparent 70%); z-index: -1; filter: blur(2px); }
+
+        .menu-item.confirm-pulse { animation: menuBurst 0.45s ease-out forwards; }
+        @keyframes menuBurst {
+            0% { transform: translateX(-10px) scale(1); filter: brightness(1); }
+            35% { transform: translateX(-25px) scale(1.15); color: #ffffff; text-shadow: 0 0 25px #ffffff, 0 0 50px #4a90e2; }
+            100% { transform: translateX(30px) scale(0.9); opacity: 0; }
+        }
+        
+        body.god-mode .menu-item.active { color: #ffcccc; animation: textGlitch 2s infinite; }
+        body.god-mode .menu-item.active::before { background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0.3) 0%, transparent 70%); }
+        @keyframes textGlitch { 0%, 15%, 100% { text-shadow: 3px 0 0 rgba(255,0,0,0.8), -3px 0 0 rgba(0,255,255,0.6), 0 0 15px #ff0000; transform: translateX(-10px); } 10% { text-shadow: -4px 0 0 rgba(255,0,0,0.8), 4px 0 0 rgba(0,255,255,0.6), 0 0 15px #ff0000; transform: translateX(-13px) skewX(5deg); } }
+        body.god-mode .god-text-danger { color: #ff1111 !important; }
+
+        .login-form-area { 
+            display: none; position: absolute; right: 12%; top: 40%; width: 300px; z-index: 10; 
+            animation: formSlamIn 0.35s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; 
+        }
+        @keyframes formSlamIn { 
+            from { opacity: 0; transform: translateX(45px) skewX(-4deg); filter: blur(4px); } 
+            to { opacity: 1; transform: translateX(0) skewX(0); filter: blur(0); } 
+        }
+
+        .game-input { background: transparent; border: none; border-bottom: 2px solid #556677; color: #fff; font-size: 1.2rem; padding: 10px 5px; margin-bottom: 20px; width: 100%; font-family: 'Teko', sans-serif; letter-spacing: 2px; transition: border-color 0.3s; }
+        .game-input:focus { outline: none; border-bottom: 2px solid #fff; box-shadow: 0 5px 10px -5px rgba(255,255,255,0.5); }
+        .game-input::placeholder { color: #556677; }
+        body.god-mode .game-input { border-bottom: 2px solid #880000; color: #ffdddd; }
+        body.god-mode .game-input:focus { border-bottom: 2px solid #ff1111; box-shadow: 0 5px 15px -5px rgba(255,0,0,0.8); }
+
+        .register-link-btn {
+            display: inline-block; font-family: 'Teko', sans-serif; font-size: 1.3rem;
+            letter-spacing: 2px; color: #8899aa; text-decoration: none; transition: all 0.2s ease; margin-top: 5px;
+        }
+        .register-link-btn:hover { color: #ffffff; text-shadow: 0 0 10px #4a90e2; transform: translateX(5px); }
+
+        .hud-text { position: absolute; z-index: 10; font-family: 'Kanit', sans-serif; font-size: 0.9rem; color: #a0a0a0; }
+        body.god-mode .hud-text { color: #ff8888; }
+        .hud-bottom-left { bottom: 30px; left: 40px; }
+    </style>
+</head>
+<body>
+
+<div id="flashOverlay" class="flash-overlay"></div>
+<div id="screenGlitch" class="screen-glitch-layer"></div>
+
+<video autoplay loop muted id="bgVideo" class="bg-video">
+    <source src="{{ url_for('static', filename='bg_loop.mp4') }}" type="video/mp4">
+</video>
+
+<div class="models-container">
+    <img src="{{ url_for('static', filename='leon_member.png') }}" id="charMember" class="char-model active">
+    <img src="{{ url_for('static', filename='leon_board.png') }}" id="charOperator" class="char-model inactive">
+</div>
+
+<img src="{{ url_for('static', filename='wesker.png') }}" id="godBg">
+
+<div class="vignette"></div>
+<div class="scanlines"></div>
+
+<div class="hud-text hud-bottom-left" id="helperText">Select a character.</div>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="alert alert-danger bg-transparent border-0 text-danger position-absolute top-0 w-100 text-center mt-3" style="z-index: 20;">{{ messages[0] }}</div>
+  {% endif %}
+{% endwith %}
+
+<div class="character-select-area" id="charSelectMenu">
+    <div class="char-title" id="mainTitle">CHARACTER SELECT</div>
+    <ul class="menu-list" id="menuList">
+        <li class="menu-item active" data-role="member" onmouseover="setActiveIndex(0)">MEMBER</li>
+        <li class="menu-item" data-role="operator" onmouseover="setActiveIndex(1)">OPERATOR</li>
+        <li class="menu-item god-text-danger" data-role="god" id="godMenu" style="display: none;" onmouseover="setActiveIndex(2)">GOD (OVERRIDE)</li>
+    </ul>
+</div>
+
+<div class="login-form-area" id="loginFormArea">
+    <div class="char-title text-white" id="loginTitle">MEMBER LOGIN</div>
+    <form method="POST" id="loginForm">
+        <input type="hidden" name="role" id="roleInput" value="member">
+        <input type="hidden" name="secret_god_mode" id="godInput" value="">
+        <input type="text" name="username" class="game-input" placeholder="USERNAME" required autocomplete="off" id="inputUser">
+        <input type="password" name="password" class="game-input" placeholder="PASSWORD" required>
+        <button type="submit" style="display:none;" id="submitBtn"></button>
+    </form>
+    
+    <div id="memberRegisterContainer" class="mt-2">
+        <!-- 🌟 ปุ่มกดไปหน้า Register ที่เชื่อมกับเอฟเฟกต์เฟดเปลี่ยนหน้า 🌟 -->
+        <a href="{{ url_for('register') }}" class="register-link-btn" onclick="pageTransition(event, this.href)">> NEW RECRUIT? REGISTER</a>
+    </div>
+</div>
+
+<script>
+    let currentIndex = 0;
+    let menuItems = document.querySelectorAll('#menuList .menu-item');
+    let isLoginFormActive = false;
+    let isGodMode = false;
+    
+    const bgVideo = document.getElementById('bgVideo');
+    const charMember = document.getElementById('charMember');
+    const charOperator = document.getElementById('charOperator');
+    const screenGlitch = document.getElementById('screenGlitch');
+
+    function updateActiveMenu() {
+        menuItems = document.querySelectorAll('#menuList .menu-item:not([style*="display: none"])');
+        if(currentIndex >= menuItems.length) currentIndex = menuItems.length - 1;
+        if(currentIndex < 0) currentIndex = 0;
+
+        menuItems.forEach((item, index) => {
+            if (index === currentIndex) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        if (!isGodMode) {
+            if (currentIndex === 0) {
+                charMember.className = 'char-model active';
+                charOperator.className = 'char-model inactive';
+                bgVideo.style.transform = 'scale(1.05) translateX(2vw)';
+            } 
+            else if (currentIndex === 1) {
+                charMember.className = 'char-model inactive';
+                charOperator.className = 'char-model active';
+                bgVideo.style.transform = 'scale(1.05) translateX(-2vw)';
+            }
+        }
+    }
+
+    window.onload = function() {
+        currentIndex = 0;
+        updateActiveMenu();
+    };
+
+    function setActiveIndex(index) {
+        if(isLoginFormActive) return;
+        if(currentIndex !== index) {
+            currentIndex = index;
+            updateActiveMenu();
+        }
+    }
+
+    function selectCharacter() {
+        if (isLoginFormActive) return;
+        const activeItem = menuItems[currentIndex];
+        const selectedRole = activeItem.getAttribute('data-role');
+
+        activeItem.classList.add('confirm-pulse');
+        screenGlitch.classList.remove('screen-glitch-active');
+        void screenGlitch.offsetWidth;
+        screenGlitch.classList.add('screen-glitch-active');
+
+        if (!isGodMode) {
+            if (selectedRole === 'member') {
+                charMember.classList.add('selected-focus');
+                charOperator.classList.add('fade-out');
+            } else if (selectedRole === 'operator') {
+                charOperator.classList.add('selected-focus');
+                charMember.classList.add('fade-out');
+            }
+        }
+
+        setTimeout(() => {
+            document.getElementById('charSelectMenu').style.display = 'none';
+            document.getElementById('loginFormArea').style.display = 'block';
+            document.getElementById('roleInput').value = selectedRole;
+            document.getElementById('loginTitle').innerText = activeItem.innerText.replace(' (OVERRIDE)', '') + " LOGIN";
+            document.getElementById('helperText').innerText = isGodMode ? "Provide God-level clearance." : "Enter credentials.";
+            
+            const regContainer = document.getElementById('memberRegisterContainer');
+            if (selectedRole === 'member') {
+                regContainer.style.display = 'block';
+            } else {
+                regContainer.style.display = 'none';
+            }
+
+            isLoginFormActive = true;
+            setTimeout(() => document.getElementById('inputUser').focus(), 80);
+        }, 320);
+    }
+
+    function goBack() {
+        document.getElementById('loginFormArea').style.display = 'none';
+        document.getElementById('charSelectMenu').style.display = 'block';
+        
+        menuItems.forEach(item => item.classList.remove('confirm-pulse'));
+        charMember.classList.remove('selected-focus', 'fade-out');
+        charOperator.classList.remove('selected-focus', 'fade-out');
+
+        if (isGodMode) deactivateGodMode();
+
+        document.getElementById('helperText').innerText = "Select a character.";
+        isLoginFormActive = false;
+        
+        updateActiveMenu();
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (!isLoginFormActive) {
+            if (event.key === 'ArrowDown') { currentIndex++; updateActiveMenu(); }
+            else if (event.key === 'ArrowUp') { currentIndex--; updateActiveMenu(); }
+            else if (event.key === 'Enter') { selectCharacter(); }
+            else if (event.key === 'Escape') { 
+                if (isGodMode) deactivateGodMode(); 
+            }
+        } else {
+            if (event.key === 'Escape') { goBack(); }
+        }
+    });
+
+    const secretCode = ['w', 'w', 's', 's', 'a', 'd', 'a', 'd'];
+    let keyIndex = 0;
+    document.addEventListener('keydown', function(event) {
+        if(isLoginFormActive) return;
+        if (event.key.toLowerCase() === secretCode[keyIndex]) {
+            keyIndex++;
+            if (keyIndex === secretCode.length) { activateGodMode(); keyIndex = 0; }
+        } else {
+            if (event.key.toLowerCase() === secretCode[0]) keyIndex = 1; else keyIndex = 0;
+        }
+    });
+
+    function activateGodMode() {
+        if(isGodMode) return;
+        isGodMode = true;
+
+        const flash = document.getElementById('flashOverlay');
+        flash.classList.remove('flash-active');
+        void flash.offsetWidth; 
+        flash.classList.add('flash-active');
+
+        document.body.classList.add('god-mode');
+        document.getElementById('mainTitle').innerText = 'SYSTEM OVERRIDE';
+        document.getElementById('helperText').innerText = "Warning: God-level threat detected.";
+        document.getElementById('godInput').value = 'activated';
+        document.getElementById('godMenu').style.display = 'block';
+        
+        currentIndex = 2; 
+        updateActiveMenu();
+    }
+
+    function deactivateGodMode() {
+        isGodMode = false;
+        document.body.classList.remove('god-mode');
+        document.getElementById('mainTitle').innerText = 'CHARACTER SELECT';
+        document.getElementById('godInput').value = '';
+        document.getElementById('godMenu').style.display = 'none';
+        
+        currentIndex = 0; 
+        updateActiveMenu(); 
+    }
+
+    document.getElementById('menuList').addEventListener('click', function(e) {
+        if(e.target && e.target.nodeName === "LI") { selectCharacter(); }
+    });
+
+    // 🌟 ฟังก์ชันจัดการ Transition จางหายเมื่อกดปุ่มเปลี่ยนหน้า 🌟
+    function pageTransition(event, url) {
+        event.preventDefault();
+        document.body.classList.add('page-fade-out');
+        setTimeout(() => {
+            window.location.href = url;
+        }, 400); // ดีเลย์ 400ms เท่ากับ CSS Animation ก่อนเปลี่ยนหน้า
+    }
+</script>
+</body>
+</html>
